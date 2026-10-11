@@ -3513,7 +3513,7 @@ def page_docs_index(docs: list) -> str:
 # --------------------------------------------------------------------------
 # L'extraction (zones, routes, base, pages) : carte_site.py. Ici, son rendu.
 
-DEPOT_GITHUB = "https://github.com/Orangetleman/Portail-but-info-showroom"
+DEPOT_GITHUB = "https://github.com/Orangetleman/portail-but-info-showroom/blob/main/"
 
 
 def _ref_depot(ref: str) -> str:
