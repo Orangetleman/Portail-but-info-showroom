@@ -1,0 +1,53 @@
+{
+  "code": "BIO",
+  "semestre": 1,
+  "intitule": "Biologie cellulaire — module d'exemple",
+  "dossier_sortie": "BIO_Biologie_cellulaire",
+  "bandeau": "Vitrine · Module d'exemple",
+  "accent": "#1f5e4a",
+  "accent_soft": "#edf4f1",
+  "accent_line": "#8fbcab",
+  "sources": [
+    "OpenStax — Biology 2e, Rice University, 2018 (manuel en accès libre, licence CC BY 4.0) : openstax.org/details/books/biology-2e",
+    "B. Alberts et al. — Molecular Biology of the Cell, 7e édition, W. W. Norton, 2022, ISBN 978-0-393-88482-1",
+    "L. A. Urry et al. — Campbell Biology, 12e édition, Pearson, 2020, ISBN 978-0-135-18874-3",
+    "Rédaction, plan, schémas, exemples et mémos : production personnelle de l'auteur des fiches"
+  ],
+  "corpus": "public",
+  "corpus_date": "2026-10-11",
+  "themes": [
+    {
+      "nom": "La cellule qui se divise",
+      "parties": [
+        1
+      ]
+    }
+  ],
+  "parties": [
+    {
+      "numero": 1,
+      "chapitre": "S1-BIO-01",
+      "titre": "La division cellulaire",
+      "sous_titre": "Cycle cellulaire, chromosomes, réplication, mitose, contrôle du cycle, méiose",
+      "fichier": "01_division_cellulaire.html",
+      "sources": [
+        "OpenStax — Biology 2e, chapitre 10 « Cell Reproduction » (cycle cellulaire, mitose, contrôle du cycle, cancer)",
+        "OpenStax — Biology 2e, chapitre 11 « Meiosis and Sexual Reproduction » (méiose, crossing-over, brassage)",
+        "OpenStax — Biology 2e, § 14.4 « DNA Replication in Prokaryotes » et § 14.5 « DNA Replication in Eukaryotes » (réplication semi-conservative)",
+        "B. Alberts et al. — Molecular Biology of the Cell, chapitre 17 « The Cell Cycle » (cyclines, CDK, points de contrôle)",
+        "L. A. Urry et al. — Campbell Biology, chapitres 12 « The Cell Cycle » et 13 « Meiosis and Sexual Life Cycles »"
+      ],
+      "sommaire": [
+        "Pourquoi une cellule se divise",
+        "Chromatine, chromosomes, chromatides",
+        "Le cycle cellulaire",
+        "La réplication de l'ADN",
+        "La mitose, phase par phase",
+        "La cytocinèse",
+        "Le contrôle du cycle",
+        "La méiose",
+        "Mitose ou méiose : le comparatif"
+      ]
+    }
+  ]
+}

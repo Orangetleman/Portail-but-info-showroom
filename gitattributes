@@ -1,0 +1,13 @@
+# Fins de ligne : LF partout, dans le dépôt COMME dans la copie de travail.
+#
+# Sans cela, Git convertit en CRLF sur Windows. Les fichiers de content/
+# seraient alors lus avec des \r\n par build.py, et les PDF produits ne
+# seraient plus identiques à ceux d'une machine Linux ou macOS. On perdrait
+# la reproductibilité de la chaîne — et l'intérêt de versionner site/.
+* text=auto eol=lf
+
+# Binaires : ne jamais y toucher.
+*.pdf binary
+*.png binary
+*.jpg binary
+*.ico binary

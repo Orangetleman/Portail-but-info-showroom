@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title desc">
+  <title id="title">Fiches BUT Informatique</title>
+  <desc id="desc">Une fiche de révision avec une étoile</desc>
+  <rect width="64" height="64" rx="16" fill="#0f4d3f"/>
+  <path d="M18 12h21l9 9v31H18z" fill="#f8f4ea"/>
+  <path d="M39 12v10h9" fill="#dfe9df"/>
+  <path d="M25 31h16M25 38h11" fill="none" stroke="#0f4d3f" stroke-linecap="round" stroke-width="3"/>
+  <path d="m43 29 1.8 4.1 4.2 1.8-4.2 1.8L43 41l-1.8-4.3-4.2-1.8 4.2-1.8z" fill="#e5a94b"/>
+</svg>

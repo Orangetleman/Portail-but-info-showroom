@@ -1,0 +1,423 @@
+/* ==========================================================================
+   Gabarit de fiches de révision — BUT Informatique
+   Format A5 (impression carnet 2-up sur A4)
+   La couleur d'accent est injectée par module via --accent (voir build.py)
+
+   UNITÉS — pourquoi tous les font-size sont en px et non en pt
+   -----------------------------------------------------------
+   La chaîne d'origine utilisait wkhtmltopdf, qui interprétait à tort les
+   valeurs « pt » comme des « px » : un « 8.4pt » écrit ici sortait à 6,3 pt
+   dans le PDF. Toutes les fiches déjà validées (R101, R105) ont donc été
+   produites à cette densité-là. Le moteur actuel (Chrome sans interface)
+   applique correctement le CSS ; pour conserver EXACTEMENT la mise en page
+   validée, les 22 « font-size » ont été convertis en px, unité qui reproduit
+   le rendu historique (1px = 0,75pt). Les valeurs numériques sont inchangées.
+   Pour agrandir le texte de toutes les fiches, c'est ici — et il faudra
+   régénérer toute la collection.
+   ========================================================================== */
+
+/* Format de page : réglé par le CSS, plus par des options de ligne de
+   commande. Marges conformes à la recette validée (T12 B13 L12 R12 mm).
+   Le pied de page est ajouté après coup (voir build.py), d'où la marge
+   basse plus large. */
+@page {
+  size: A5;
+  margin: 12mm 12mm 13mm 12mm;
+}
+
+:root {
+  --accent:        #3d1152;   /* couleur d'identité du module            */
+  --accent-soft:   #f2ecf6;   /* fond lilas des encadrés définition/code */
+  --accent-line:   #b490c9;   /* filets clairs                          */
+  --warn-bg:       #fdeeee;
+  --warn-line:     #a63a2b;
+  --ex-bg:         #f4f4f4;
+  --ink:           #1a1a1a;
+  --ink-soft:      #555;
+}
+
+/* ---------- base ---------- */
+
+* { box-sizing: border-box; }
+
+body {
+  font-family: "DejaVu Sans", sans-serif;
+  font-size: 8.4px;
+  line-height: 1.34;
+  color: var(--ink);
+  margin: 0;
+  padding: 0;
+  -webkit-print-color-adjust: exact;
+}
+
+p { margin: 0 0 .45em 0; text-align: justify; }
+
+ul, ol { margin: .2em 0 .5em 0; padding-left: 1.15em; }
+li { margin-bottom: .16em; }
+ul ul, ol ol, ul ol, ol ul { margin: .12em 0 .12em 0; }
+
+strong { font-weight: bold; }
+em     { font-style: italic; }
+
+code, .mono {
+  font-family: "DejaVu Sans Mono", monospace;
+  font-size: .93em;
+}
+p code, li code, td code {
+  background: var(--accent-soft);
+  padding: 0 .18em;
+  border-radius: 2px;
+}
+
+.formule {
+  /* DejaVu Serif ne dessine pas les lettres ajourees des ensembles de nombres
+     (R, N, Z, C) : DejaVu Sans est ajoute en second pour que ces caracteres-la
+     y soient pris, au lieu de tomber sur une police du systeme. */
+  font-family: "DejaVu Serif", "DejaVu Sans", serif;
+  font-style: italic;
+}
+
+/* Complémentaire d'un ensemble : la barre au-dessus du nom (A surligné).
+   Le trait est produit par le CSS, ce qui évite un caractère combinant
+   que toutes les polices ne dessinent pas correctement. */
+.comp { text-decoration: overline; }
+
+/* Formule mise en evidence, centree sur sa propre ligne (module R106) */
+.centre { text-align: center; }
+
+/* ==========================================================================
+   CONTRÔLE DES SAUTS DE PAGE
+   Aucun bloc ne doit être coupé ; aucun titre ne doit rester seul en bas.
+   ========================================================================== */
+
+p, ul, ol, li, table, tr, pre,
+.box, .code, .recap, .erreurs, .keep {
+  page-break-inside: avoid;
+}
+
+/* .keep = conteneur groupant un titre avec le bloc qui le suit */
+.keep { page-break-inside: avoid; }
+
+h2, h3, h4 { page-break-after: avoid; page-break-inside: avoid; }
+
+/* ==========================================================================
+   PAGE DE COUVERTURE
+   ========================================================================== */
+
+.cover { page-break-after: always; }
+
+.cover-bandeau {
+  background: var(--accent);
+  color: #fff;
+  font-size: 7.6px;
+  letter-spacing: .09em;
+  text-transform: uppercase;
+  padding: 4.5px 8px;
+  margin-bottom: 26px;
+}
+
+.cover-module {
+  font-size: 30px;
+  font-weight: bold;
+  color: var(--accent);
+  line-height: 1;
+  margin: 0 0 2px 0;
+}
+
+.cover-module-nom {
+  font-size: 9.5px;
+  color: var(--ink-soft);
+  margin-bottom: 20px;
+}
+
+.cover-repere {
+  display: inline-block;
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  font-size: 7.6px;
+  letter-spacing: .07em;
+  text-transform: uppercase;
+  padding: 2px 7px;
+  margin-bottom: 8px;
+}
+
+.cover-titre {
+  font-size: 16px;
+  font-weight: bold;
+  color: var(--ink);
+  line-height: 1.16;
+  margin: 0 0 4px 0;
+}
+
+.cover-sous-titre {
+  font-size: 8.6px;
+  color: var(--ink-soft);
+  margin-bottom: 22px;
+}
+
+.cover-rule {
+  border: 0;
+  border-top: 2px solid var(--accent);
+  margin: 0 0 16px 0;
+}
+
+.sommaire-titre {
+  font-size: 8.2px;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: .09em;
+  color: var(--accent);
+  margin-bottom: 7px;
+}
+
+ol.sommaire { list-style: none; padding-left: 0; margin: 0; }
+ol.sommaire li {
+  padding: 2.6px 0;
+  border-bottom: 1px solid #e3e3e3;
+}
+ol.sommaire .num {
+  display: inline-block;
+  width: 2.1em;
+  font-family: "DejaVu Serif", serif;
+  color: var(--accent);
+  font-weight: bold;
+}
+
+.cover-collection {
+  margin-top: 20px;
+  padding-top: 7px;
+  border-top: 1px solid #ddd;
+  font-size: 7.2px;
+  color: var(--ink-soft);
+}
+.cover-collection .autres { color: #888; }
+
+/* ==========================================================================
+   SECTIONS
+   ========================================================================== */
+
+h2 {
+  background: var(--accent);
+  color: #fff;
+  font-size: 9.6px;
+  font-weight: bold;
+  padding: 3.4px 7px;
+  margin: 13px 0 7px 0;
+}
+h2 .rom {
+  font-family: "DejaVu Serif", serif;
+  opacity: .82;
+  margin-right: .55em;
+}
+
+h3 {
+  color: var(--accent);
+  font-size: 8.8px;
+  font-weight: bold;
+  border-bottom: 1px solid var(--accent-line);
+  padding-bottom: 1.6px;
+  margin: 9px 0 4.5px 0;
+}
+
+h4 {
+  font-size: 8.4px;
+  font-weight: bold;
+  color: var(--ink);
+  margin: 7px 0 3px 0;
+}
+
+/* ==========================================================================
+   ENCADRÉS
+   ========================================================================== */
+
+.box {
+  margin: 6px 0;
+  padding: 5px 8px;
+  font-size: 8.1px;
+}
+.box .box-t {
+  display: block;
+  font-size: 7.1px;
+  font-weight: bold;
+  letter-spacing: .09em;
+  text-transform: uppercase;
+  margin-bottom: 2.6px;
+}
+.box p:last-child, .box ul:last-child, .box ol:last-child { margin-bottom: 0; }
+
+/* DÉFINITION / PROPRIÉTÉ — fond lilas, filet violet à gauche */
+.box.def {
+  background: var(--accent-soft);
+  border-left: 3px solid var(--accent);
+}
+.box.def .box-t { color: var(--accent); }
+
+/* MÉTHODE — encadré blanc bordé */
+.box.methode {
+  background: #fff;
+  border: 1px solid var(--accent);
+}
+.box.methode .box-t { color: var(--accent); }
+
+/* ATTENTION / PIÈGE — fond rosé, filet rouge brique */
+.box.warn {
+  background: var(--warn-bg);
+  border-left: 3px solid var(--warn-line);
+}
+.box.warn .box-t { color: var(--warn-line); }
+
+/* EXEMPLE — fond gris clair */
+.box.ex { background: var(--ex-bg); }
+.box.ex .box-t { color: var(--ink-soft); }
+
+/* ---------- blocs de code : fond lilas, filet violet ---------- */
+
+pre.code {
+  font-family: "DejaVu Sans Mono", monospace;
+  font-size: 7.6px;
+  line-height: 1.32;
+  background: var(--accent-soft);
+  border-left: 3px solid var(--accent);
+  padding: 4.5px 7px;
+  margin: 5px 0;
+  white-space: pre;
+  overflow: hidden;
+}
+pre.code .c { color: #6c6c6c; font-style: italic; }  /* commentaire */
+pre.code .k { color: var(--accent); font-weight: bold; }  /* mot-clé  */
+pre.code .s { color: #7a2d12; }                       /* chaîne     */
+
+/* ==========================================================================
+   TABLEAUX
+   ========================================================================== */
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 7.7px;
+  margin: 5px 0;
+}
+th {
+  background: var(--accent);
+  color: #fff;
+  text-align: left;
+  padding: 2.6px 5px;
+  font-weight: bold;
+}
+td {
+  border-bottom: 1px solid #ddd;
+  padding: 2.3px 5px;
+  vertical-align: top;
+}
+tr:nth-child(even) td { background: #fafafa; }
+td.mono, th.mono { font-family: "DejaVu Sans Mono", monospace; }
+
+/* ==========================================================================
+   RÉCAPITULATIF + ERREURS FRÉQUENTES (fin de fiche)
+   ========================================================================== */
+
+.recap {
+  background: var(--accent-soft);
+  border-top: 2px solid var(--accent);
+  padding: 6px 8px;
+  margin: 12px 0 6px 0;
+}
+.recap .box-t {
+  display: block;
+  font-size: 7.4px;
+  font-weight: bold;
+  letter-spacing: .09em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 3px;
+}
+.recap ul { margin-bottom: 0; }
+
+.erreurs {
+  background: var(--warn-bg);
+  border-top: 2px solid var(--warn-line);
+  padding: 6px 8px;
+  margin: 6px 0;
+}
+.erreurs .box-t {
+  display: block;
+  font-size: 7.4px;
+  font-weight: bold;
+  letter-spacing: .09em;
+  text-transform: uppercase;
+  color: var(--warn-line);
+  margin-bottom: 3px;
+}
+.erreurs ul { margin-bottom: 0; }
+
+/* ==========================================================================
+   SCHÉMAS ET FIGURES
+   Un schéma s'écrit en SVG inline dans le HTML de contenu ; il hérite des
+   couleurs du module via currentColor et les variables CSS.
+   ========================================================================== */
+
+figure.schema {
+  margin: 7px 0;
+  padding: 5px 6px 4px 6px;
+  background: #fcfcfc;
+  border: 1px solid #e0e0e0;
+  text-align: center;
+  page-break-inside: avoid;
+}
+figure.schema svg { max-width: 100%; height: auto; display: block; margin: 0 auto; }
+figure.schema figcaption {
+  font-size: 7px;
+  color: var(--ink-soft);
+  font-style: italic;
+  margin-top: 3px;
+  text-align: center;
+}
+
+/* Un schéma placé DANS un encadré : pas de double cadre */
+.box figure.schema { background: transparent; border: 0; padding: 2px 0; }
+
+/* Classes utilitaires pour le SVG (évitent de répéter les couleurs) */
+.sv-fill   { fill: var(--accent); }
+.sv-soft   { fill: var(--accent-soft); }
+.sv-stroke { stroke: var(--accent); fill: none; stroke-width: 1.2; }
+.sv-line   { stroke: var(--accent-line); fill: none; stroke-width: 1; }
+.sv-warn   { fill: var(--warn-line); }
+.sv-txt    { font-family: "DejaVu Sans", sans-serif; font-size: 8px; fill: var(--ink); }
+.sv-txt-w  { font-family: "DejaVu Sans", sans-serif; font-size: 8px; fill: #fff; }
+.sv-mono   { font-family: "DejaVu Sans Mono", monospace; font-size: 7.5px; fill: var(--ink); }
+.sv-small  { font-family: "DejaVu Sans", sans-serif; font-size: 6.6px; fill: var(--ink-soft); }
+
+/* ---------- schéma « en dur » : suite de blocs reliés (sans SVG) ---------- */
+
+.flux {
+  display: table;
+  width: 100%;
+  margin: 6px 0;
+  page-break-inside: avoid;
+  border-spacing: 3px 0;
+}
+.flux .etape {
+  display: table-cell;
+  background: var(--accent-soft);
+  border-left: 3px solid var(--accent);
+  padding: 4px 5px;
+  font-size: 7.4px;
+  text-align: center;
+  vertical-align: middle;
+}
+.flux .fleche {
+  display: table-cell;
+  width: 14px;
+  color: var(--accent);
+  font-size: 10px;
+  text-align: center;
+  vertical-align: middle;
+}
+
+/* ---------- renvoi vers une autre fiche de la collection ---------- */
+
+.renvoi {
+  font-size: 7.6px;
+  color: var(--accent);
+  font-style: italic;
+}

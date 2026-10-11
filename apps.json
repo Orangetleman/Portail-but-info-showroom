@@ -1,0 +1,136 @@
+{
+  "_lisez_moi": [
+    "Le registre des outils du portail. C'est CE fichier qui decide de ce qui",
+    "apparait sur la page d'accueil : build_site.py le lit et fabrique les",
+    "cartes. Ajouter un outil = ajouter une entree ici, rien d'autre.",
+    "",
+    "Champs d'une entree :",
+    "  id       identifiant court et stable",
+    "  nom      ce qui s'affiche sur la carte",
+    "  nom_court  facultatif - le nom employe dans les pastilles de lien,",
+    "             ou la place manque. Defaut : nom.",
+    "  meta     UNE indication courte, pas une phrase (3 a 4 mots). Pour les",
+    "           fiches, elle est calculee : le nombre reel de fiches.",
+    "  accent   la couleur propre de l'outil (#rrggbb), la meme sur sa carte",
+    "           du portail et dans ses pages (data-app). Sans elle, gris.",
+    "  icone    fiches | quiz | groupes | emploi | exos | ressources | outil",
+    "  url      relative = interne ; absolue = heberge sur un sous-domaine",
+    "  index    FACULTATIF - le fichier qui liste les ressources de l'outil,",
+    "           tagees par module et par fiche (docs/integration-outils.md)",
+    "  liens    ce que cet outil relie, montre par une fleche plutot",
+    "           qu'explique : [{ vers: <id d'un autre outil>,",
+    "           sens: vers | depuis | double }]",
+    "  actif    false = carte grisee, mention bientot",
+    "",
+    "Aucune distinction visuelle selon l'auteur : pour celui qui consulte,",
+    "c'est un seul service."
+  ],
+  "schema": "portail-but/v1",
+  "titre": "Les outils de la promo",
+  "sous_titre": "BUT Informatique — IUT d'Orsay",
+  "apps": [
+    {
+      "id": "fiches",
+      "nom": "Fiches de révision",
+      "nom_court": "Fiches",
+      "auteur": "Christophe",
+      "icone": "fiches",
+      "url": "fiches/index.html",
+      "role": "reader_user",
+      "actif": true,
+      "liens": [
+        {
+          "vers": "exos",
+          "sens": "double"
+        }
+      ],
+      "accent": "#2b3a4a"
+    },
+    {
+      "id": "quiz",
+      "nom": "Quiz de révision",
+      "nom_court": "Quiz",
+      "auteur": "Christophe",
+      "icone": "quiz",
+      "url": "quiz/index.html",
+      "meta": "S'interroger, pas relire",
+      "actif": true,
+      "liens": [
+        {
+          "vers": "fiches",
+          "sens": "depuis"
+        }
+      ],
+      "accent": "#1f5f9f"
+    },
+    {
+      "id": "groupes",
+      "nom": "Groupes de révision",
+      "nom_court": "Groupes",
+      "auteur": "Christophe",
+      "icone": "groupes",
+      "url": "groupes/index.html",
+      "meta": "Réviser à plusieurs",
+      "role": "user",
+      "actif": true,
+      "liens": [
+        {
+          "vers": "fiches",
+          "sens": "vers"
+        },
+        {
+          "vers": "exos",
+          "sens": "vers"
+        }
+      ],
+      "accent": "#2f7d5b"
+    },
+    {
+      "id": "emploi",
+      "nom": "Emploi du temps",
+      "nom_court": "Emploi du temps",
+      "auteur": "Christophe",
+      "icone": "emploi",
+      "url": "emploi/index.html",
+      "meta": "Tes cours, tes séances, tes révisions",
+      "role": "user",
+      "actif": true,
+      "liens": [
+        {
+          "vers": "groupes",
+          "sens": "double"
+        }
+      ],
+      "accent": "#0f6b7a"
+    },
+    {
+      "id": "exos",
+      "nom": "Exercices",
+      "auteur": "Exemple Nom",
+      "icone": "exos",
+      "url": "https://exemple.fr/exos/",
+      "index": "https://exemple.fr/index.json",
+      "actif": false,
+      "meta": "TD et entraînement",
+      "liens": [
+        {
+          "vers": "fiches",
+          "sens": "double"
+        }
+      ],
+      "nom_court": "Exercices",
+      "accent": "#8a4b0f"
+    }
+  ],
+  "publier_fiches": true,
+  "_decision": [
+    "Les fiches sont republiees, mais dans une zone protegee : /fiches et",
+    "/pdf exigent le role reader_user (functions/_middleware.js). L'index de",
+    "recherche et le catalogue vivent sous /fiches/ pour la meme raison : ils",
+    "decrivent le contenu, donc ils se protegent comme lui.",
+    "",
+    "publier_fiches a false remet tout hors ligne d'un coup : ni pages, ni",
+    "PDF, ni index, ni catalogue ne sont ecrits. Ce qui n'est pas ecrit ne",
+    "peut pas etre servi."
+  ]
+}

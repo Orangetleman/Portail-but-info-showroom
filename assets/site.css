@@ -1,0 +1,2728 @@
+/* ==========================================================================
+   Fiches BUT — habillage ÉCRAN
+   ==========================================================================
+
+   Cette feuille consomme EXACTEMENT les mêmes fragments HTML que le PDF
+   (content/<CODE>/NN_*.html). Aucun fragment ne contient de décoration : les
+   classes y sont purement sémantiques (box def, box warn, recap, formule…).
+   assets/fiche.css les habille pour le papier A5, celle-ci pour l'écran.
+
+   Conséquence à ne jamais perdre de vue : si une fiche s'affiche mal sur le
+   site, on corrige CETTE feuille, jamais le contenu.
+
+   Les couleurs d'accent par module sont générées par build_site.py et
+   injectées en tête de la version publiée (bloc « couleurs des modules »).
+   ========================================================================== */
+
+/* ---------- palette ---------- */
+
+:root {
+  color-scheme: light dark;
+
+  --fond:          #ffffff;
+  --fond-doux:     #f6f6f7;
+  --fond-carte:    #ffffff;
+  --bord:          #e2e2e5;
+  --bord-fort:     #cfcfd4;
+  --texte:         #1a1a1a;
+  --texte-doux:    #5b5b63;
+
+  --warn-bg:       #fdeeee;
+  --warn-line:     #a63a2b;
+  --ex-bg:         #f4f4f4;
+
+  /* valeurs de repli : chaque module les remplace via [data-module] */
+  --accent:        #444;
+  --accent-soft:   #f0f0f2;
+  --accent-line:   #b0b0b8;
+
+  --largeur:       62rem;
+  --rayon:         10px;
+  --ombre:         0 1px 2px rgba(0,0,0,.05), 0 8px 24px rgba(0,0,0,.05);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --fond:        #14141a;
+    --fond-doux:   #1b1b23;
+    --fond-carte:  #1e1e27;
+    --bord:        #2e2e3a;
+    --bord-fort:   #3d3d4c;
+    --texte:       #e9e9ee;
+    --texte-doux:  #a2a2b0;
+
+    --warn-bg:     #33241b;
+    --warn-line:   #e0836f;
+    --ex-bg:       #23232c;
+
+    --ombre:       0 1px 2px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.35);
+  }
+}
+
+:root[data-theme="dark"] {
+  --fond:        #14141a;
+  --fond-doux:   #1b1b23;
+  --fond-carte:  #1e1e27;
+  --bord:        #2e2e3a;
+  --bord-fort:   #3d3d4c;
+  --texte:       #e9e9ee;
+  --texte-doux:  #a2a2b0;
+
+  --warn-bg:     #33241b;
+  --warn-line:   #e0836f;
+  --ex-bg:       #23232c;
+
+  --ombre:       0 1px 2px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.35);
+}
+
+/* ---------- base ---------- */
+
+* { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  background: var(--fond-doux);
+  color: var(--texte);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue",
+               Arial, sans-serif;
+  font-size: 16px;
+  line-height: 1.62;
+}
+
+a { color: var(--accent); }
+
+.enveloppe {
+  max-width: var(--largeur);
+  margin: 0 auto;
+  padding: 0 1.25rem;
+}
+
+/* ---------- un element mis en lumiere (lien vers #ancre) ---------- */
+@keyframes lumiere { 0% { box-shadow: 0 0 0 4px var(--accent); background-color: color-mix(in srgb, var(--accent) 18%, transparent); } 100% { box-shadow: 0 0 0 0 transparent; background-color: transparent; } }
+.lumiere { animation: lumiere 1.7s ease-out; border-radius: 6px; scroll-margin-top: 4.2rem; }
+@media (prefers-reduced-motion: reduce) { .lumiere { animation: none; outline: 3px solid var(--accent); outline-offset: 3px; } }
+
+/* ---------- barre du haut ---------- */
+
+.barre {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: var(--fond);
+  border-bottom: 1px solid var(--bord);
+}
+
+.barre-int {
+  max-width: var(--largeur);
+  margin: 0 auto;
+  padding: .55rem 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: .9rem;
+  flex-wrap: wrap;
+}
+
+/* « ← » : le retour, à gauche de la marque sur toutes les pages (caché sur
+   l'accueil). Le même dessin partout, pour qu'on le retrouve sans chercher. */
+.btn-retour { flex: none; }
+.btn-retour svg { width: 1.1rem; height: 1.1rem; }
+
+.marque {
+  font-weight: 700;
+  letter-spacing: -.01em;
+  text-decoration: none;
+  color: var(--texte);
+  white-space: nowrap;
+}
+.marque span { color: var(--texte-doux); font-weight: 400; }
+
+.fil {
+  font-size: .86rem;
+  color: var(--texte-doux);
+  display: flex;
+  align-items: center;
+  gap: .4rem;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+.fil a { color: var(--texte-doux); text-decoration: none; }
+.fil a:hover { color: var(--accent); text-decoration: underline; }
+.fil .sep { opacity: .5; }
+.fil strong { color: var(--texte); font-weight: 600; }
+
+.barre-fin { margin-left: auto; display: flex; align-items: center; gap: .5rem; }
+
+/* ---------- recherche ---------- */
+
+.recherche { position: relative; }
+
+.recherche input {
+  width: 15rem;
+  max-width: 42vw;
+  padding: .38rem .7rem .38rem 1.9rem;
+  border: 1px solid var(--bord-fort);
+  border-radius: 999px;
+  background: var(--fond-doux) url("data:image/svg+xml;utf8,\
+<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' \
+stroke='%238a8a95' stroke-width='2.2' stroke-linecap='round'>\
+<circle cx='11' cy='11' r='7'/><path d='M20 20l-3.6-3.6'/></svg>") .55rem 50% / .85rem no-repeat;
+  color: var(--texte);
+  font: inherit;
+  font-size: .88rem;
+}
+.recherche input:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.resultats {
+  position: absolute;
+  top: calc(100% + .4rem);
+  right: 0;
+  width: 26rem;
+  max-width: 84vw;
+  max-height: 60vh;
+  overflow-y: auto;
+  background: var(--fond-carte);
+  border: 1px solid var(--bord-fort);
+  border-radius: var(--rayon);
+  box-shadow: var(--ombre);
+  padding: .3rem;
+}
+.resultats[hidden] { display: none; }
+.resultats a {
+  display: block;
+  padding: .5rem .6rem;
+  border-radius: 6px;
+  text-decoration: none;
+  color: var(--texte);
+}
+.resultats a:hover, .resultats a:focus { background: var(--fond-doux); }
+.resultats .r-code {
+  font-size: .72rem;
+  font-weight: 700;
+  letter-spacing: .04em;
+  color: var(--accent);
+}
+.resultats .r-titre { font-size: .92rem; }
+.resultats .r-ou { font-size: .78rem; color: var(--texte-doux); }
+.resultats .vide { padding: .7rem .6rem; color: var(--texte-doux); font-size: .88rem; }
+
+/* ---------- boutons ---------- */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: .42rem;
+  padding: .42rem .8rem;
+  border: 1px solid var(--bord-fort);
+  border-radius: 8px;
+  background: var(--fond-carte);
+  color: var(--texte);
+  font: inherit;
+  font-size: .87rem;
+  text-decoration: none;
+  cursor: pointer;
+}
+.btn:hover { border-color: var(--accent); color: var(--accent); }
+.btn svg { width: 1rem; height: 1rem; flex: none; }
+
+.btn-accent {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+.btn-accent:hover { color: #fff; filter: brightness(1.12); }
+
+.btn-icone { padding: .42rem .5rem; }
+
+/* ---------- accueil et listes ---------- */
+
+.hero { padding: 2.6rem 0 1.4rem; }
+.hero h1 {
+  font-size: clamp(1.7rem, 4vw, 2.3rem);
+  line-height: 1.15;
+  margin: 0 0 .4rem;
+  letter-spacing: -.02em;
+}
+.hero p { margin: 0; color: var(--texte-doux); max-width: 46rem; }
+
+h2.section {
+  font-size: .8rem;
+  text-transform: uppercase;
+  letter-spacing: .11em;
+  color: var(--texte-doux);
+  margin: 2.2rem 0 .8rem;
+  font-weight: 700;
+}
+
+.grille {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(15.5rem, 1fr));
+  gap: .9rem;
+}
+
+.carte {
+  display: block;
+  background: var(--fond-carte);
+  border: 1px solid var(--bord);
+  border-radius: var(--rayon);
+  padding: 1rem 1.1rem;
+  text-decoration: none;
+  color: var(--texte);
+  position: relative;
+  overflow: hidden;
+}
+.carte:hover { border-color: var(--accent); box-shadow: var(--ombre); }
+.carte::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 4px;
+  background: var(--accent);
+}
+.carte .c-code {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--accent);
+  letter-spacing: -.01em;
+}
+.carte .c-nom { font-size: .95rem; margin: .1rem 0 .5rem; }
+.carte .c-meta { font-size: .8rem; color: var(--texte-doux); }
+.carte.inactive { opacity: .58; pointer-events: none; }
+
+/* liste des fiches d'un module */
+
+.liste-fiches { list-style: none; padding: 0; margin: 0; display: grid; gap: .7rem; }
+
+.fiche-item {
+  background: var(--fond-carte);
+  border: 1px solid var(--bord);
+  border-radius: var(--rayon);
+  padding: .9rem 1.1rem;
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+.fiche-item:hover { border-color: var(--accent); }
+.fiche-item .num {
+  font-size: .72rem;
+  font-weight: 700;
+  letter-spacing: .08em;
+  color: var(--accent);
+  border: 1px solid var(--accent);
+  border-radius: 5px;
+  padding: .1rem .42rem;
+  white-space: nowrap;
+  margin-top: .2rem;
+}
+.fiche-item .corps { flex: 1 1 18rem; min-width: 0; }
+.fiche-item .t { font-size: 1.02rem; font-weight: 600; }
+.fiche-item .t a { color: inherit; text-decoration: none; }
+.fiche-item .t a:hover { color: var(--accent); }
+.fiche-item .st { font-size: .87rem; color: var(--texte-doux); }
+.fiche-item .actions { display: flex; gap: .4rem; align-items: center; }
+
+details.sommaire-repli { margin-top: .5rem; }
+details.sommaire-repli summary {
+  cursor: pointer;
+  font-size: .82rem;
+  color: var(--texte-doux);
+}
+details.sommaire-repli ol {
+  margin: .4rem 0 0;
+  padding-left: 1.3rem;
+  font-size: .87rem;
+  color: var(--texte-doux);
+}
+
+/* ---------- en-tête d'un module ou d'une fiche ---------- */
+
+.entete {
+  padding: 2rem 0 1.2rem;
+  border-bottom: 1px solid var(--bord);
+  margin-bottom: 1.6rem;
+}
+.entete .e-code {
+  font-size: .78rem;
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+.entete h1 {
+  font-size: clamp(1.45rem, 3.4vw, 2rem);
+  line-height: 1.2;
+  margin: .25rem 0 .3rem;
+  letter-spacing: -.02em;
+}
+.entete .e-st { color: var(--texte-doux); margin: 0; }
+
+.outils {
+  display: flex;
+  gap: .5rem;
+  flex-wrap: wrap;
+  margin-top: 1.1rem;
+}
+
+/* ---------- sommaire d'une fiche ---------- */
+
+.plan {
+  background: var(--fond-carte);
+  border: 1px solid var(--bord);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--rayon);
+  padding: .9rem 1.1rem;
+  margin-bottom: 1.6rem;
+}
+.plan .p-t {
+  font-size: .74rem;
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: .45rem;
+}
+.plan ol { margin: 0; padding-left: 0; list-style: none; }
+.plan li { padding: .12rem 0; }
+.plan a { text-decoration: none; color: var(--texte); font-size: .93rem; }
+.plan a:hover { text-decoration: underline; }
+.plan .rn {
+  display: inline-block;
+  min-width: 2.1em;
+  color: var(--accent);
+  font-weight: 700;
+  font-size: .85rem;
+}
+
+/* ==========================================================================
+   LE CONTENU DE LA FICHE
+   Mêmes classes que dans le PDF, habillage écran.
+   ========================================================================== */
+
+.fiche { padding-bottom: 3rem; }
+
+.fiche h2 {
+  font-size: 1.16rem;
+  line-height: 1.3;
+  margin: 2.3rem 0 .9rem;
+  padding-bottom: .4rem;
+  border-bottom: 2px solid var(--accent);
+  scroll-margin-top: 4.2rem;      /* pour ne pas passer sous la barre collante */
+}
+.fiche h2 .rom {
+  color: var(--accent);
+  margin-right: .5em;
+  font-variant-numeric: tabular-nums;
+}
+.fiche h3 {
+  font-size: 1.02rem;
+  color: var(--accent);
+  margin: 1.5rem 0 .5rem;
+}
+.fiche h4 { font-size: .97rem; margin: 1.1rem 0 .35rem; }
+
+.fiche p { margin: 0 0 .75rem; }
+.fiche ul, .fiche ol { margin: .35rem 0 .9rem; padding-left: 1.35rem; }
+.fiche li { margin-bottom: .28rem; }
+
+.fiche code, .fiche .mono {
+  font-family: ui-monospace, "DejaVu Sans Mono", SFMono-Regular, Menlo,
+               Consolas, monospace;
+  font-size: .89em;
+}
+.fiche p code, .fiche li code, .fiche td code {
+  background: var(--accent-soft);
+  padding: .05em .3em;
+  border-radius: 4px;
+}
+
+.fiche .formule {
+  font-family: "DejaVu Serif", Cambria, Georgia, serif;
+  font-style: italic;
+}
+.fiche .comp { text-decoration: overline; }
+.fiche .centre { text-align: center; }
+
+/* encadrés */
+
+.fiche .box {
+  margin: 1.1rem 0;
+  padding: .85rem 1.05rem;
+  border-radius: var(--rayon);
+  font-size: .96rem;
+}
+.fiche .box .box-t {
+  display: block;
+  font-size: .72rem;
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  margin-bottom: .4rem;
+}
+.fiche .box p:last-child,
+.fiche .box ul:last-child,
+.fiche .box ol:last-child,
+.fiche .box table:last-child { margin-bottom: 0; }
+
+.fiche .box.def {
+  background: var(--accent-soft);
+  border-left: 3px solid var(--accent);
+}
+.fiche .box.def .box-t { color: var(--accent); }
+
+.fiche .box.methode {
+  background: var(--fond-carte);
+  border: 1px solid var(--accent);
+}
+.fiche .box.methode .box-t { color: var(--accent); }
+
+.fiche .box.warn {
+  background: var(--warn-bg);
+  border-left: 3px solid var(--warn-line);
+}
+.fiche .box.warn .box-t { color: var(--warn-line); }
+
+.fiche .box.ex { background: var(--ex-bg); }
+.fiche .box.ex .box-t { color: var(--texte-doux); }
+
+/* blocs de code */
+
+.fiche pre.code {
+  font-family: ui-monospace, "DejaVu Sans Mono", SFMono-Regular, Menlo,
+               Consolas, monospace;
+  font-size: .85rem;
+  line-height: 1.5;
+  background: var(--accent-soft);
+  border-left: 3px solid var(--accent);
+  border-radius: 0 var(--rayon) var(--rayon) 0;
+  padding: .8rem 1rem;
+  margin: 1rem 0;
+  overflow-x: auto;          /* le code déborde plutôt que d'écraser la page */
+  white-space: pre;
+}
+.fiche pre.code .c { color: var(--texte-doux); font-style: italic; }
+.fiche pre.code .k { color: var(--accent); font-weight: 700; }
+/* la couleur des chaînes doit rester lisible sur fond sombre */
+.fiche pre.code .s { color: #a2542a; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .fiche pre.code .s { color: #e0a06f; }
+}
+:root[data-theme="dark"] .fiche pre.code .s { color: #e0a06f; }
+
+/* tableaux : ils défilent seuls plutôt que de déformer la page */
+
+.fiche .table-scroll { overflow-x: auto; margin: 1rem 0; }
+
+.fiche table {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: .92rem;
+}
+.fiche th {
+  background: var(--accent);
+  color: #fff;
+  text-align: left;
+  padding: .42rem .6rem;
+  font-weight: 600;
+}
+.fiche td {
+  padding: .4rem .6rem;
+  border-bottom: 1px solid var(--bord);
+  vertical-align: top;
+}
+.fiche tr:last-child td { border-bottom: 0; }
+
+/* schémas */
+
+.fiche figure.schema {
+  margin: 1.2rem 0;
+  padding: .9rem;
+  background: var(--fond-carte);
+  border: 1px solid var(--bord);
+  border-radius: var(--rayon);
+  text-align: center;
+  overflow-x: auto;
+}
+.fiche figure.schema svg { max-width: 100%; height: auto; }
+.fiche figure.schema figcaption {
+  font-size: .82rem;
+  color: var(--texte-doux);
+  font-style: italic;
+  margin-top: .5rem;
+}
+.fiche .sv-fill   { fill: var(--accent); }
+.fiche .sv-soft   { fill: var(--accent-soft); }
+.fiche .sv-stroke { stroke: var(--accent); fill: none; stroke-width: 1.2; }
+.fiche .sv-line   { stroke: var(--accent-line); fill: none; stroke-width: 1; }
+.fiche .sv-warn   { fill: var(--warn-line); }
+.fiche .sv-txt    { font-size: 8px; fill: var(--texte); }
+.fiche .sv-txt-w  { font-size: 8px; fill: #fff; }
+.fiche .sv-mono   { font-size: 7.5px; fill: var(--texte); }
+.fiche .sv-small  { font-size: 6.6px; fill: var(--texte-doux); }
+
+.fiche .flux {
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  gap: .4rem;
+  flex-wrap: wrap;
+}
+.fiche .flux .etape {
+  border: 1px solid var(--bord-fort);
+  border-left: 3px solid var(--accent);
+  border-radius: 6px;
+  padding: .45rem .7rem;
+  font-size: .85rem;
+  background: var(--fond);
+  display: flex;
+  align-items: center;
+}
+.fiche .flux .fleche {
+  display: flex;
+  align-items: center;
+  color: var(--accent);
+  font-size: 1.05rem;
+}
+
+/* renvoi vers une autre fiche */
+
+.fiche .renvoi {
+  font-size: .89rem;
+  font-style: italic;
+  color: var(--texte-doux);
+  border-left: 2px solid var(--accent-line);
+  padding-left: .7rem;
+  margin: 1.1rem 0;
+}
+.fiche .renvoi a { font-style: normal; font-weight: 600; }
+
+/* fin de fiche */
+
+.fiche .recap, .fiche .erreurs {
+  margin: 1.6rem 0;
+  padding: 1rem 1.15rem;
+  border-radius: var(--rayon);
+  font-size: .96rem;
+}
+.fiche .recap {
+  background: var(--accent-soft);
+  border: 1px solid var(--accent-line);
+}
+.fiche .erreurs {
+  background: var(--warn-bg);
+  border: 1px solid var(--warn-line);
+}
+.fiche .recap .box-t, .fiche .erreurs .box-t {
+  display: block;
+  font-size: .74rem;
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  margin-bottom: .45rem;
+}
+.fiche .recap .box-t { color: var(--accent); }
+.fiche .erreurs .box-t { color: var(--warn-line); }
+.fiche .recap ul:last-child, .fiche .erreurs ul:last-child { margin-bottom: 0; }
+
+/* .keep n'a de sens qu'au moment d'imprimer : à l'écran, c'est neutre */
+.fiche .keep { display: contents; }
+
+/* ---------- navigation fiche précédente / suivante ---------- */
+
+.pagination {
+  display: flex;
+  gap: .8rem;
+  justify-content: space-between;
+  border-top: 1px solid var(--bord);
+  padding-top: 1.2rem;
+  margin-top: 2rem;
+  flex-wrap: wrap;
+}
+.pagination a {
+  flex: 1 1 14rem;
+  background: var(--fond-carte);
+  border: 1px solid var(--bord);
+  border-radius: var(--rayon);
+  padding: .7rem .95rem;
+  text-decoration: none;
+  color: var(--texte);
+}
+.pagination a:hover { border-color: var(--accent); }
+.pagination .sens { font-size: .74rem; text-transform: uppercase; letter-spacing: .08em; color: var(--texte-doux); }
+.pagination .quoi { font-size: .95rem; font-weight: 600; }
+.pagination .suivant { text-align: right; }
+
+/* ---------- panneau d'impression ---------- */
+
+.voile {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.25rem;
+  z-index: 50;
+}
+.voile[hidden] { display: none; }
+
+.panneau {
+  background: var(--fond-carte);
+  border-radius: 14px;
+  box-shadow: var(--ombre);
+  max-width: 32rem;
+  width: 100%;
+  padding: 1.4rem 1.5rem;
+}
+.panneau h2 { margin: 0 0 .6rem; font-size: 1.12rem; }
+.panneau ol { margin: 0 0 1rem; padding-left: 1.25rem; font-size: .93rem; }
+.panneau li { margin-bottom: .3rem; }
+.panneau .pied { display: flex; gap: .5rem; justify-content: flex-end; }
+
+/* ---------- petit message passager (copie du lien) ---------- */
+
+.bulle {
+  position: fixed;
+  left: 50%;
+  bottom: 1.6rem;
+  transform: translateX(-50%);
+  background: var(--texte);
+  color: var(--fond);
+  padding: .5rem .9rem;
+  border-radius: 999px;
+  font-size: .87rem;
+  z-index: 60;
+  box-shadow: var(--ombre);
+}
+.bulle[hidden] { display: none; }
+
+/* ---------- pied de page ---------- */
+
+.pied-site {
+  border-top: 1px solid var(--bord);
+  margin-top: 2.5rem;
+  padding: 1.4rem 0 2.5rem;
+  font-size: .84rem;
+  color: var(--texte-doux);
+}
+.pied-site a { color: var(--texte-doux); }
+
+/* ---------- écrans étroits ---------- */
+
+@media (max-width: 640px) {
+  body { font-size: 15.5px; }
+  .barre-int { gap: .55rem; padding: .5rem .9rem; }
+  .fil { order: 3; flex-basis: 100%; }
+  .recherche input { width: 100%; max-width: none; }
+
+  /* La liste de suggestions s'ancrait sur le champ (« .recherche » est
+     « relative »), large de 163 px sur un téléphone. Comme elle est plus
+     large que lui et calée à DROITE, elle partait de 138 px HORS de l'écran,
+     à gauche : un tiers des propositions était illisible.
+
+     « static » retire cet ancrage. La liste se cale alors sur le premier
+     ancêtre positionné, l'en-tête collant, qui fait toute la largeur : elle
+     s'ouvre sous la barre, d'un bord à l'autre, ce qui est de toute façon la
+     bonne forme sur un écran étroit. */
+  .recherche { position: static; }
+  .resultats {
+    left: .7rem;
+    right: .7rem;
+    width: auto;
+    max-width: none;
+    max-height: 70vh;
+  }
+
+  .barre-fin { flex: 1 1 auto; }
+  .enveloppe { padding: 0 .9rem; }
+  .fiche-item .actions { width: 100%; }
+}
+
+/* ---------- impression d'une page du site ----------
+   Le PDF A5 reste l'objet imprimable de référence (couverture, pied de page,
+   pagination maîtrisée). Si quelqu'un lance malgré tout Ctrl+P sur le site,
+   on retire au moins l'habillage : barre, outils, navigation. */
+
+@media print {
+  .barre, .outils, .pagination, .pied-site, .voile, .bulle { display: none !important; }
+  body { background: #fff; color: #000; font-size: 11pt; }
+  .enveloppe { max-width: none; padding: 0; }
+  .fiche .box, .fiche pre.code, .fiche table, .fiche figure.schema { break-inside: avoid; }
+}
+
+/* ---------- bloc « D'après » en bas d'une fiche ---------- */
+
+.fiche + .sources-fiche,
+.sources-fiche { margin-top: 2rem; }
+.sources-fiche ul { margin: 0; padding-left: 1.2rem; font-size: .9rem; }
+/* Une adresse de source ne contient pas d'espace : sans permission de la
+   couper n'importe ou, elle ne se replie pas, la ligne s'elargit, la page
+   avec, et le telephone dezoome pour la faire tenir — c'est ainsi que
+   l'en-tete paraissait « plus large que l'ecran ». « anywhere » compte
+   aussi pour la largeur minimale (« break-word » non). La propriete
+   s'herite : posee sur la fiche entiere, elle couvre aussi un nombre
+   binaire de 32 chiffres ecrit sans espace secable (R103 03), et sur le
+   sous-titre d'un module, ses sources. */
+.fiche, .sources-fiche, .e-st { overflow-wrap: anywhere; }
+/* Les tableaux gardent leur defilement propre : couper les mots dans une
+   cellule etroite serait pire que faire glisser le tableau. */
+.fiche table { overflow-wrap: normal; }
+
+/* ---------- titres dans le panneau d'impression ---------- */
+
+.panneau h3 {
+  font-size: .95rem;
+  margin: .9rem 0 .3rem;
+  color: var(--texte);
+}
+
+/* ==========================================================================
+   PAGE DE CONNEXION
+   Volontairement autonome : elle ne charge ni la recherche ni le catalogue,
+   qui sont justement derrière la porte.
+   ========================================================================== */
+
+.connexion {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+}
+
+.connexion-carte {
+  width: 100%;
+  max-width: 25rem;
+  background: var(--fond-carte);
+  border: 1px solid var(--bord);
+  border-radius: 14px;
+  box-shadow: var(--ombre);
+  padding: 1.7rem 1.9rem 1.9rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.connexion-carte::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: .28rem;
+  background: var(--accent);
+}
+
+.connexion-logo {
+  display: block;
+  width: 3.1rem;
+  height: 3.1rem;
+  margin: 0 0 1rem;
+  border-radius: 14px;
+  box-shadow: 0 8px 18px rgba(15, 77, 63, .16);
+}
+
+.connexion-carte .c-marque {
+  font-size: .74rem;
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: .7rem;
+}
+
+.connexion-carte h1 {
+  font-size: 1.5rem;
+  letter-spacing: -.02em;
+  margin: 0 0 .5rem;
+}
+
+.connexion-carte .c-intro { color: var(--texte-doux); margin: 0 0 1.4rem; }
+
+.connexion-carte label {
+  display: block;
+  font-size: .82rem;
+  font-weight: 600;
+  margin-bottom: .3rem;
+}
+
+.connexion-carte input[type="email"],
+.connexion-carte input[type="password"],
+.connexion-carte input[type="text"],
+.form-pseudo-compte input[type="text"] {
+  width: 100%;
+  padding: .72rem .85rem;
+  border: 1px solid var(--bord-fort);
+  border-radius: 10px;
+  background: var(--fond);
+  color: var(--texte);
+  font: inherit;
+  font-size: .95rem;
+  margin-bottom: 1rem;
+  transition: border-color .18s ease, box-shadow .18s ease, background .18s ease;
+}
+.connexion-carte input[type="email"]:focus,
+.connexion-carte input[type="password"]:focus,
+.connexion-carte input[type="text"]:focus,
+.form-pseudo-compte input[type="text"]:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 4px var(--accent-soft);
+  background: var(--fond-carte);
+}
+
+/* Le champ de mot de passe et son œil ------------------------------------
+   Le bouton est POSÉ SUR le champ plutôt qu'à côté : à côté, il rétrécirait
+   la zone de saisie sur téléphone, là où elle est déjà juste. Le champ réserve
+   donc la place à droite par son remplissage. */
+.champ-mdp { position: relative; }
+
+.champ-mdp input[type="password"],
+.champ-mdp input[type="text"] { padding-right: 3rem; }
+
+/* Changer de pseudo, dans la page « Mon compte » ---------------------------
+   Le champ et son bouton tiennent sur une ligne, alignés par le haut : le
+   champ hérite d'une marge basse des formulaires de connexion, et sans cet
+   alignement le bouton flottait un cran trop bas. */
+.form-pseudo-compte {
+  display: flex;
+  align-items: flex-start;
+  gap: .5rem;
+  flex-wrap: wrap;
+}
+.form-pseudo-compte input[type="text"] {
+  width: auto;
+  flex: 1 1 12rem;
+  max-width: 18rem;
+  margin-bottom: 0;
+}
+.form-pseudo-compte .btn { padding: .72rem 1.1rem; }
+
+/* Administration ----------------------------------------------------------
+   Trois boutons de rôle par ligne plutôt qu'un menu déroulant : à trois
+   choix, tout se lit d'un coup d'œil, et le rôle courant se montre en
+   désactivant le sien. */
+.form-role {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.2rem;
+}
+.form-role input[type="text"],
+.form-role select {
+  padding: .6rem .75rem;
+  border: 1px solid var(--bord-fort);
+  border-radius: 10px;
+  background: var(--fond);
+  color: var(--texte);
+  font: inherit;
+  font-size: .92rem;
+}
+.form-role input[type="text"] { flex: 1 1 10rem; max-width: 14rem; }
+
+/* Les trois boutons restent sur une ligne : empilés, ils allongent la
+   rangée et le tableau devient illisible. C'est la boîte qui défile. */
+.admin-roles { display: flex; gap: .3rem; flex-wrap: nowrap; }
+
+/* ---------- demandes d'acces ---------- */
+.demande-motif {
+  margin: .5rem 0;
+  padding: .5rem .8rem;
+  border-left: 3px solid var(--accent, #888);
+  background: var(--fond-doux);
+  white-space: pre-wrap;
+  font-style: italic;
+}
+.demande-carte {
+  margin: .8rem 0;
+  padding: .6rem .8rem;
+  border: 1px solid var(--bordure, #ddd);
+  border-radius: 6px;
+}
+.demande-carte textarea { width: 100%; box-sizing: border-box; margin: .4rem 0; }
+.demande-tete { font-weight: 600; }
+.demande-traitee { opacity: .8; }
+
+/* ---------- emploi du temps ---------- */
+.edt-barre { display: flex; justify-content: space-between; align-items: center; gap: .6rem; flex-wrap: wrap; margin: .6rem 0; }
+.edt-nav { display: flex; gap: .4rem; align-items: center; }
+.edt-grille {
+  display: grid;
+  grid-template-columns: 3.2rem repeat(7, minmax(0, 1fr));
+  gap: 2px;
+  background: var(--fond-carte);
+  border: 1px solid var(--bord);
+  border-radius: var(--rayon);
+  padding: 4px;
+  overflow-x: auto;
+}
+.edt-heures, .edt-jour { display: flex; flex-direction: column; min-width: 0; }
+.edt-entete { font-size: .8rem; font-weight: 600; text-align: center; padding: .2rem 0; color: var(--texte-doux); }
+.edt-aujourdhui .edt-entete { color: var(--accent); }
+.edt-journee { min-height: 1.4rem; display: flex; flex-direction: column; gap: 2px; padding: 2px 0; border-bottom: 1px solid var(--bord); }
+.edt-corps { position: relative; height: 48rem; }   /* 16 heures x 3rem */
+.edt-aller { position: relative; display: inline-flex; align-items: center; cursor: pointer; }
+.edt-aller strong { text-transform: capitalize; }
+.edt-aller input[type=date] { position: absolute; inset: 0; opacity: 0; width: 100%; cursor: pointer; }
+.edt-type-ligne { display: flex; align-items: center; gap: .5rem; margin-top: .2rem; }
+.edt-type-ligne select { flex: 1; }
+.edt-pastille-type { width: 1.1rem; height: 1.1rem; border-radius: 50%; flex: none; border: 2px solid var(--fond-carte); box-shadow: 0 0 0 1px var(--bord-fort); }
+.edt-dialogue { border-top: 5px solid var(--couleur-type, var(--accent)); }
+.edt-vue-jour .edt-jour-cache { display: none; }
+.edt-vue-jour { grid-template-columns: 2.6rem minmax(0, 1fr); }
+@media (max-width: 700px) {
+  .edt-corps { height: 40rem; }
+  .edt-h { height: 2.5rem; }
+  .edt-ev { font-size: .82rem; }
+}
+.edt-h { height: 3rem; border-top: 1px solid var(--bord); font-size: .7rem; color: var(--texte-doux); padding-left: .2rem; box-sizing: border-box; }
+.edt-heures .edt-h { border-top-color: transparent; text-align: right; padding-right: .3rem; }
+.edt-ev {
+  display: block; width: 100%; box-sizing: border-box; border: 0; border-radius: 4px;
+  color: #fff; font-size: .72rem; line-height: 1.15; text-align: left; padding: .2rem .3rem;
+  cursor: pointer; overflow: hidden; text-overflow: ellipsis; box-shadow: var(--ombre);
+}
+.edt-ev small { opacity: .85; font-size: .66rem; }
+.edt-place { position: absolute; left: 1px; right: 1px; }
+.edt-fait { opacity: .5; text-decoration: line-through; }
+.edt-importe { border-left: 3px solid rgba(255,255,255,.6); }
+.edt-liste-taches { list-style: none; padding: 0; }
+.edt-liste-taches li { display: flex; gap: .5rem; align-items: center; padding: .25rem 0; border-bottom: 1px solid var(--bord); }
+.edt-liste-taches li span { flex: 1; }
+.edt-retard { color: var(--warn-line); font-weight: 600; }
+.edt-form-lien { display: flex; gap: .4rem; flex-wrap: wrap; }
+.edt-form-lien input[type=url] { flex: 2 1 16rem; }
+.edt-form-lien input[type=text] { flex: 1 1 8rem; }
+.edt-liste-cals { list-style: none; padding: 0; }
+.edt-liste-cals li { padding: .3rem 0; border-bottom: 1px solid var(--bord); }
+.edt-liste-cals .lien-bouton { margin-left: .5rem; }
+.edt-dialogue { border: 1px solid var(--bord-fort); border-radius: var(--rayon); padding: 1rem 1.2rem; max-width: 28rem; width: 92vw; background: var(--fond-carte); color: var(--texte); }
+.edt-dialogue::backdrop { background: rgba(0,0,0,.35); }
+/* Le selecteur de fiche : le champ remplace, et la fenetre de choix. */
+.sf-champ { display: flex; align-items: center; gap: .45rem; flex-wrap: wrap; margin-top: .25rem; }
+.sf-lu { flex: 1 1 10rem; font-size: .9rem; }
+.sf-vide { color: var(--texte-doux); font-style: italic; }
+/* plusieurs fiches : une étiquette par fiche, retirable */
+.sf-etiquettes { display: flex; flex-wrap: wrap; gap: .3rem; }
+.sf-etiquette { display: inline-flex; align-items: center; gap: .3rem; font-size: .82rem; padding: .15rem .3rem .15rem .55rem; border: 1px solid var(--bord); border-radius: 8px; background: var(--fond-doux); }
+.sf-etiquette-x { border: 0; background: none; color: var(--texte-doux); font: inherit; line-height: 1; cursor: pointer; padding: 0 .2rem; border-radius: 4px; }
+.sf-etiquette-x:hover, .sf-etiquette-x:focus-visible { color: var(--texte); background: var(--bord); outline: none; }
+.sf-dialogue { max-width: 34rem; }
+.sf-tete { display: flex; align-items: center; justify-content: space-between; gap: .5rem; }
+.sf-tete h2 { margin: 0; }
+.sf-dialogue .sf-recherche { width: 100%; box-sizing: border-box; padding: .5rem .7rem; border: 1px solid var(--bord-fort); border-radius: 10px; font: inherit; background: var(--fond-carte); color: var(--texte); margin: .6rem 0 .4rem; }
+.sf-liste { max-height: 60vh; overflow-y: auto; }
+.sf-module h3 { font-size: .85rem; margin: .8rem 0 .25rem; color: var(--texte-doux); display: flex; align-items: center; gap: .4rem; }
+.sf-module .grp-pastille:not(.grp-pastille-neutre) { background: var(--accent); }
+.sf-fiche { display: flex; align-items: baseline; gap: .5rem; width: 100%; text-align: left; padding: .4rem .6rem; border: 1px solid transparent; border-radius: 8px; background: none; color: var(--texte); font: inherit; cursor: pointer; }
+.sf-fiche:hover, .sf-fiche:focus-visible { background: var(--fond-doux); border-color: var(--bord); outline: none; }
+.sf-num { font-weight: 700; color: var(--accent); font-variant-numeric: tabular-nums; }
+.sf-theme { font-size: .78rem; text-transform: uppercase; letter-spacing: .04em; color: var(--texte-doux); margin: .45rem 0 .1rem .6rem; }
+.edt-dialogue label { display: block; margin-top: .5rem; font-size: .85rem; }
+.edt-dialogue input[type=text], .edt-dialogue input[type=date], .edt-dialogue input[type=time], .edt-dialogue select, .edt-dialogue textarea {
+  width: 100%; box-sizing: border-box; padding: .5rem .7rem; border: 1px solid var(--bord-fort); border-radius: 10px;
+  font: inherit; background: var(--fond-carte); color: var(--texte); margin-top: .2rem;
+}
+.edt-dialogue label { font-weight: 600; }
+.edt-ligne { display: flex; gap: .5rem; }
+.edt-ligne > div { flex: 1; }
+.edt-boutons { display: flex; gap: .5rem; margin-top: .8rem; flex-wrap: wrap; }
+.btn-danger { border-color: var(--warn-line); color: var(--warn-line); margin-left: auto; }
+
+/* ---------- groupes ---------- */
+/* Une app, pas une page : des cartes, des avatars, un fil. Les formulaires
+   vivent dans des dialogues, avec les memes styles que l'emploi du temps. */
+.grp-entete { display: flex; justify-content: space-between; align-items: flex-end; gap: 1rem; flex-wrap: wrap; }
+.grp-grille { display: grid; grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr)); gap: .8rem; margin: .6rem 0 1.4rem; }
+.grp-carte {
+  display: flex; flex-direction: column; gap: .35rem; padding: .9rem 1rem;
+  background: var(--fond-carte); border: 1px solid var(--bord); border-radius: var(--rayon);
+  color: var(--texte); text-decoration: none; box-shadow: var(--ombre);
+}
+a.grp-carte:hover { border-color: var(--accent); transform: translateY(-1px); }
+.grp-carte-titre { font-weight: 700; font-size: 1rem; }
+.grp-carte-desc { margin: 0; font-size: .85rem; color: var(--texte-doux); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.grp-carte-pied { display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; margin-top: auto; padding-top: .3rem; font-size: .82rem; }
+.grp-carte-tete { display: flex; gap: .6rem; align-items: center; }
+/* la carte d'un groupe : le « ⋯ » à droite du titre, la case en mode sélection */
+.grp-carte-ligne .grp-carte-titre { flex: 1 1 auto; min-width: 0; }
+.grp-carte-menu { flex: none; width: 1.9rem; height: 1.9rem; border: 1px solid transparent; border-radius: 8px; background: none; color: var(--texte-doux); font: inherit; font-size: 1.1rem; line-height: 1; cursor: pointer; }
+.grp-carte-menu:hover, .grp-carte-menu:focus-visible { border-color: var(--bord-fort); background: var(--fond-doux); color: var(--texte); outline: none; }
+.grp-carte-selectionnable { cursor: pointer; }
+.grp-carte-selectionnable:hover { border-color: var(--accent); }
+.grp-carte.est-selectionnee { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+.grp-carte-case { margin: 0; }
+.grp-menu button.est-danger { color: #b3261e; }
+/* la fenêtre d'invitation : le code QR centré, le lien dessous */
+.grp-dialogue-invitation .inv-qr { display: flex; justify-content: center; margin: .6rem 0; }
+.grp-dialogue-invitation .inv-qr svg { border: 1px solid var(--bord); border-radius: 8px; background: #fff; max-width: 100%; height: auto; }
+.grp-dialogue-invitation .grp-lien-actif { display: flex; gap: .4rem; flex-wrap: wrap; align-items: center; }
+.grp-dialogue-invitation .inv-url { flex: 1 1 12rem; min-width: 0; padding: .45rem .6rem; border: 1px solid var(--bord-fort); border-radius: 8px; font: inherit; font-size: .85rem; background: var(--fond-carte); color: var(--texte); }
+.grp-carte-invitation { border-color: var(--accent); }
+/* Sur l'accent (sombre en clair, clair en sombre), le texte prend la
+   couleur du fond : lisible dans les deux themes. */
+.grp-pastille { display: inline-block; padding: .05em .55em; border-radius: 1em; font-size: .72rem; font-weight: 600; background: var(--accent); color: var(--fond); }
+.grp-pastille-neutre { background: var(--fond-doux); color: var(--texte-doux); border: 1px solid var(--bord); }
+/* La discussion en direct : « untel ecrit… » sous le fil, et le point
+   vert qui dit que la connexion directe est la. */
+.grp-frappe { font-size: .8rem; color: var(--texte-doux); font-style: italic; margin: .15rem 0 .3rem .4rem; min-height: 1.1em; }
+.grp-direct { display: flex; align-items: center; gap: .35rem; margin: .35rem 0 0; font-size: .75rem; }
+.grp-point { width: .55em; height: .55em; border-radius: 50%; background: #2fa36b; box-shadow: 0 0 0 3px rgba(47,163,107,.2); }
+/* Modifier, vu par, references */
+.grp-modifie { font-style: italic; }
+.grp-edit { width: 100%; box-sizing: border-box; font: inherit; padding: .4rem .6rem; border: 1px solid var(--bord-fort); border-radius: 10px; background: var(--fond); color: var(--texte); resize: vertical; }
+.grp-edit-actions { display: flex; gap: .35rem; justify-content: flex-end; margin-top: .3rem; }
+.grp-vu { cursor: help; }
+.grp-plus-msg { position: relative; display: inline-block; }
+.grp-points { border: 0; background: none; color: inherit; font: inherit; font-size: 1.05em; line-height: 1; cursor: pointer; padding: 0 .25em; opacity: .85; }
+.grp-points:hover { opacity: 1; }
+/* Deux classes pour l'emporter sur « .grp-menu » (declare plus bas, en
+   position absolue, cale au-dessus de son parent) : avec la seule classe
+   .grp-menu-flottant, c'est .grp-menu qui gagnait — le menu se retrouvait
+   en absolu avec un « bottom » impossible, ecrase a 10 px de haut. */
+.grp-menu.grp-menu-flottant { position: fixed; bottom: auto; left: 0; top: 0; min-width: 9.5rem; color: var(--texte); text-align: left; font-size: .9rem; z-index: 60; }
+/* la mise en forme des messages */
+.grp-texte { white-space: normal; overflow-wrap: anywhere; }
+.grp-texte code { font-family: ui-monospace, "Cascadia Mono", Consolas, monospace; font-size: .88em; padding: .05em .3em; border-radius: 4px; background: rgba(127,127,127,.18); }
+.grp-texte pre { margin: .35rem 0; padding: .5rem .65rem; border-radius: 8px; background: rgba(0,0,0,.28); overflow-x: auto; font-size: .85em; }
+.grp-texte pre code { background: none; padding: 0; }
+.grp-texte ul, .grp-texte ol { margin: .2rem 0; padding-left: 1.3rem; }
+.grp-texte blockquote { margin: .2rem 0; padding: .1rem .6rem; border-left: 3px solid currentColor; opacity: .85; }
+.grp-texte a { color: inherit; text-decoration: underline; }
+.grp-texte del { opacity: .7; }
+/* Repondre : la citation dans la bulle, et le rappel au-dessus du champ */
+.grp-citation { display: block; width: 100%; text-align: left; border: 0; border-left: 3px solid var(--accent); background: rgba(127,127,127,.12); color: inherit; font: inherit; font-size: .82rem; padding: .3rem .55rem; border-radius: 6px; margin: 0 0 .35rem; cursor: pointer; }
+.grp-citation:hover { background: rgba(127,127,127,.2); }
+.grp-citation-qui { display: block; font-weight: 700; font-size: .74rem; opacity: .9; }
+.grp-citation-texte { display: block; opacity: .85; }
+.grp-citation-morte { font-style: italic; cursor: default; }
+.grp-reponse { display: flex; align-items: center; gap: .5rem; margin: .5rem 0 0; padding: .35rem .6rem; border-left: 3px solid var(--accent); background: var(--fond-doux); border-radius: 6px; font-size: .85rem; cursor: pointer; }
+.grp-reponse-corps { flex: 1; min-width: 0; }
+.grp-reponse-qui { font-weight: 700; margin-right: .4rem; }
+.grp-reponse-texte { color: var(--texte-doux); }
+.grp-ligne-lumiere .grp-bulle { box-shadow: 0 0 0 3px var(--accent); transition: box-shadow .3s; }
+/* Selectionner : la barre, les cases, la ligne cliquable */
+.grp-selection { display: flex; align-items: center; justify-content: space-between; gap: .5rem; padding: .45rem .7rem; margin-bottom: .5rem; border: 1px solid var(--accent); border-radius: var(--rayon); background: var(--fond-carte); font-size: .9rem; }
+.grp-selection-actions { display: flex; gap: .35rem; }
+/* les contacts (lot C-12) */
+.grp-entete-actions { display: flex; gap: .4rem; align-items: center; flex-wrap: wrap; }
+.ct-form { background: var(--fond-carte); border: 1px solid var(--bord); border-radius: var(--rayon); padding: .8rem 1rem; margin: .6rem 0 1rem; }
+.ct-form label { display: block; font-size: .85rem; font-weight: 600; margin-bottom: .3rem; }
+.ct-ligne { display: flex; gap: .4rem; flex-wrap: wrap; }
+.ct-ligne input { flex: 1 1 10rem; padding: .45rem .6rem; border: 1px solid var(--bord-fort); border-radius: 8px; font: inherit; background: var(--fond-carte); color: var(--texte); }
+.sf-contact { align-items: center; padding-left: .6rem; }
+.grp-demander-contact { font-size: .8rem; }
+/* où j'en suis avec ce membre (proposition 6) : un état, pas un bouton */
+.grp-contact-etat { font-size: .8rem; color: var(--texte-doux); text-decoration: none; cursor: default; }
+.grp-contact-etat:hover { filter: none; }
+.edt-invitations .grp-membres { margin: .3rem 0 0; }
+.grp-ligne-choix { cursor: pointer; }
+.grp-case { align-self: center; width: 1.05rem; height: 1.05rem; margin: 0 .2rem 0 0; flex: none; accent-color: var(--accent); }
+.grp-ligne-moi .grp-case { order: 2; margin: 0 0 0 .2rem; }
+.grp-refs { display: flex; flex-wrap: wrap; gap: .3rem; margin: .35rem 0 .1rem; }
+.grp-ref { display: inline-flex; align-items: center; gap: .35rem; font-size: .78rem; padding: .2rem .55rem; border: 1px solid var(--bord); border-radius: 8px; background: var(--fond-doux); color: var(--texte); text-decoration: none; max-width: 100%; }
+.grp-ref:hover { border-color: var(--accent); }
+.grp-ref-type { font-size: .66rem; text-transform: uppercase; letter-spacing: .04em; color: var(--accent); font-weight: 700; }
+.grp-ref-morte { opacity: .6; text-decoration: line-through; pointer-events: none; }
+.grp-refs-choisies { display: flex; flex-wrap: wrap; gap: .3rem; margin: .5rem 0 0; }
+.grp-ref-chip { display: inline-flex; align-items: center; gap: .15rem; }
+.grp-ref-retirer { border: 0; background: none; color: var(--texte-doux); font: inherit; cursor: pointer; padding: 0 .2rem; line-height: 1; }
+.grp-ref-retirer:hover { color: var(--texte); }
+.grp-plus { position: relative; }
+.grp-plus > .btn { border-radius: 50%; width: 2.6rem; height: 2.6rem; padding: 0; justify-content: center; font-size: 1.3rem; }
+.grp-menu { position: absolute; bottom: calc(100% + .35rem); left: 0; background: var(--fond-carte); border: 1px solid var(--bord-fort); border-radius: 10px; box-shadow: var(--ombre); padding: .25rem; min-width: 14rem; z-index: 5; }
+.grp-menu button { display: block; width: 100%; text-align: left; border: 0; background: none; color: var(--texte); font: inherit; padding: .5rem .7rem; border-radius: 8px; cursor: pointer; }
+.grp-menu button:hover, .grp-menu button:focus-visible { background: var(--fond-doux); outline: none; }
+.grp-pastille-attente { background: var(--warn-bg); color: var(--warn-line); border: 1px solid var(--warn-line); }
+.grp-chip { display: inline-block; padding: .05em .55em; border-radius: 1em; font-size: .75rem; background: var(--accent-soft); color: var(--accent); text-decoration: none; border: 1px solid var(--accent-line); }
+.grp-avatar {
+  display: inline-flex; align-items: center; justify-content: center; width: 2.1rem; height: 2.1rem; border-radius: 50%;
+  color: #fff; font-weight: 700; font-size: .8rem; letter-spacing: .02em; flex: none; border: 2px solid var(--fond-carte);
+}
+.grp-avatar-petit { width: 1.55rem; height: 1.55rem; font-size: .62rem; vertical-align: middle; }
+.grp-avatars { display: flex; }
+.grp-avatars .grp-avatar { margin-left: -.5rem; }
+.grp-avatars .grp-avatar:first-child { margin-left: 0; }
+.grp-tete { display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap; margin: 1rem 0 .4rem; }
+.grp-tete h1 { margin: .1rem 0; }
+.grp-banniere { padding: .8rem 1rem; border: 1px solid var(--accent); border-radius: var(--rayon); background: var(--accent-soft); margin: .6rem 0; }
+.grp-banniere p { margin: .3rem 0; }
+.grp-barre-section { display: flex; justify-content: space-between; align-items: center; gap: .6rem; flex-wrap: wrap; margin: .4rem 0 .8rem; }
+.grp-barre-section .c-note { margin: 0; }
+.grp-vide { text-align: center; padding: 2rem 0; }
+
+/* le fil de discussion */
+.grp-fil { display: flex; flex-direction: column; gap: .5rem; max-height: 60vh; min-height: 14rem; overflow: auto; padding: .8rem; background: var(--fond-doux); border: 1px solid var(--bord); border-radius: var(--rayon); }
+.grp-jour { align-self: center; font-size: .72rem; color: var(--texte-doux); text-transform: capitalize; padding: .1rem .6rem; background: var(--fond-carte); border-radius: 1em; margin: .3rem 0; }
+.grp-ligne { display: flex; gap: .5rem; align-items: flex-end; max-width: 78%; }
+.grp-ligne-moi { align-self: flex-end; flex-direction: row-reverse; }
+.grp-bulle { background: var(--fond-carte); border: 1px solid var(--bord); border-radius: 14px 14px 14px 4px; padding: .45rem .75rem; box-shadow: var(--ombre); }
+.grp-ligne-moi .grp-bulle { background: var(--accent); color: var(--fond); border-color: var(--accent); border-radius: 14px 14px 4px 14px; }
+.grp-ligne-moi .grp-bulle .lien-bouton { color: var(--fond); opacity: .85; }
+.grp-bulle p { margin: 0; white-space: pre-wrap; word-break: break-word; }
+.grp-bulle-nom { font-size: .72rem; font-weight: 700; color: var(--accent); margin-bottom: .1rem; }
+.grp-bulle-meta { font-size: .68rem; opacity: .7; margin-top: .2rem; text-align: right; }
+.grp-composeur { display: flex; gap: .5rem; align-items: flex-end; margin-top: .6rem; }
+.grp-composeur textarea { flex: 1; resize: vertical; min-height: 2.6rem; padding: .6rem .8rem; border: 1px solid var(--bord-fort); border-radius: 14px; font: inherit; background: var(--fond-carte); color: var(--texte); }
+.grp-composeur .btn { border-radius: 50%; width: 2.6rem; height: 2.6rem; padding: 0; justify-content: center; }
+.grp-composeur textarea { box-sizing: border-box; max-height: 40vh; }
+/* Modifier un message, dans le composeur (proposition 5) : le bandeau de la
+   réponse, avec son propre titre ; le « + » et les références en attente se
+   cachent le temps de la modification ; la bulle modifiée se cerne. */
+.grp-edition .grp-reponse-qui { color: var(--accent); }
+.grp-en-edition .grp-plus, .grp-en-edition #grp-refs { display: none; }
+.grp-ligne-edition .grp-bulle, .grp-ligne-tenue .grp-bulle { outline: 2px solid var(--accent); outline-offset: 3px; }
+.grp-ligne-tenue .grp-bulle { filter: brightness(1.08); }
+/* L'appui long : comme sur WhatsApp, la barre des actions prend la place de
+   l'en-tête, en haut de l'écran — toujours en vue, quel que soit le
+   défilement (collée dans la page, elle passait sous l'en-tête collant).
+   Au-dessus de l'en-tête (20), sous le menu flottant de son « ⋯ » (60). */
+.grp-barre-msg { position: fixed; top: 0; left: 0; right: 0; z-index: 40; display: flex; align-items: center; gap: .25rem; padding: max(.35rem, env(safe-area-inset-top)) .6rem .35rem; border-bottom: 2px solid var(--accent); background: var(--fond-carte); box-shadow: var(--ombre); }
+.grp-barre-msg-actions { display: flex; flex: 1; justify-content: space-around; gap: .15rem; }
+.grp-barre-bouton { display: inline-flex; flex-direction: column; align-items: center; gap: .1rem; min-width: 3.1rem; padding: .3rem .3rem .25rem; border: 0; border-radius: 10px; background: none; color: var(--texte); font: inherit; font-size: .72rem; cursor: pointer; }
+.grp-barre-bouton svg { width: 1.25rem; height: 1.25rem; }
+.grp-barre-bouton:hover, .grp-barre-bouton:focus-visible { background: var(--fond-doux); outline: none; }
+.grp-barre-bouton.est-danger { color: var(--warn-line); }
+.grp-barre-points { font-size: 1.25rem; line-height: 1.25rem; height: 1.25rem; }
+.grp-barre-fermer { font-size: 1.2rem; padding: 0 .4rem; }
+/* Au doigt, l'appui long ouvre la barre : pas de sélection de texte ni de
+   bulle iOS par-dessus (« Copier » est dans la barre). */
+@media (pointer: coarse) {
+  .grp-bulle { -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
+}
+
+/* les seances */
+.grp-seance { display: flex; gap: .8rem; padding: .8rem; background: var(--fond-carte); border: 1px solid var(--bord); border-radius: var(--rayon); box-shadow: var(--ombre); }
+.grp-date { flex: none; align-self: flex-start; width: 3.2rem; text-align: center; border-radius: 8px; background: var(--accent-soft); color: var(--accent); padding: .35rem 0; line-height: 1.1; }
+.grp-date strong { display: block; font-size: 1.3rem; }
+.grp-date span { font-size: .7rem; text-transform: uppercase; }
+.grp-seance-corps { flex: 1; display: flex; flex-direction: column; gap: .25rem; min-width: 0; }
+.grp-passee { opacity: .55; }
+
+/* les membres */
+.grp-membres { list-style: none; padding: 0; margin: 0; }
+.grp-membres li { display: flex; align-items: center; gap: .7rem; padding: .55rem .2rem; border-bottom: 1px solid var(--bord); }
+.grp-membre-texte { flex: 1; min-width: 0; }
+.grp-membre-actions { display: flex; gap: .6rem; font-size: .8rem; }
+.grp-actions-fin { display: flex; gap: .5rem; flex-wrap: wrap; margin-top: 1rem; }
+.grp-lien { margin-top: 1rem; padding: .8rem 1rem; border: 1px dashed var(--bord-fort); border-radius: var(--rayon); }
+.grp-lien h3 { margin: 0 0 .3rem; font-size: 1rem; }
+.grp-lien-actif { display: flex; gap: .4rem; flex-wrap: wrap; align-items: center; margin: .5rem 0; }
+.grp-lien-actif input { flex: 1 1 16rem; min-width: 0; font: inherit; font-size: .85rem; padding: .4rem .6rem; border: 1px solid var(--bord-fort); border-radius: 8px; background: var(--fond); color: var(--texte); }
+.rj-carte { margin-top: 1rem; }
+.enveloppe-etroite { max-width: 42rem; }
+.rj-carte h2 { margin: 0 0 .3rem; }
+.grp-actions-fin .btn-danger { margin-left: auto; }
+
+/* lot D : le fondateur (pastille pleine, liseré), la note sur la chaîne de
+   confiance, le dialogue Paramètres, la fenêtre d'invitation enrichie */
+.grp-pastille-fondateur { background: var(--texte); color: var(--fond); box-shadow: 0 0 0 2px var(--accent); }
+.grp-chaine-note { margin: .6rem 0 0; font-size: .8rem; }
+.grp-p-inviter { margin: .8rem 0 0; padding: .5rem .8rem .6rem; border: 1px solid var(--bord); border-radius: var(--rayon); }
+.grp-p-inviter legend { font-size: .85rem; font-weight: 600; padding: 0 .3rem; }
+.grp-form .grp-p-radio { display: flex; gap: .55rem; align-items: flex-start; font-weight: 400; font-size: .85rem; margin-top: .4rem; cursor: pointer; }
+.grp-form .grp-p-radio input { margin-top: .2rem; flex: none; }
+.grp-p-fondation { margin-top: 1rem; padding-top: .8rem; border-top: 1px dashed var(--bord-fort); }
+.grp-p-fondation h3 { margin: 0 0 .3rem; font-size: 1rem; }
+
+/* lot E : signaler un message ; la lecture de signalement (administrateur
+   du site) : bandeau rouge, message signale cercle, boutons de verdict ;
+   « mes signalements » sous la discussion ; la ligne d'un groupe signale
+   dans la table de l'administration */
+.grp-banniere-signalement { border-color: var(--warn-line); background: var(--warn-bg); }
+.grp-banniere-signalement .grp-sig-titre { color: var(--warn-line); font-size: 1.05rem; }
+.grp-banniere-signalement .demande-motif { margin: .4rem 0; }
+.grp-banniere-signalement textarea { width: 100%; box-sizing: border-box; margin: .4rem 0 .2rem; font: inherit; padding: .5rem .7rem; border: 1px solid var(--bord-fort); border-radius: var(--rayon); background: var(--fond-carte); color: var(--texte); }
+.grp-sig-boutons { display: flex; gap: .4rem; flex-wrap: wrap; }
+.grp-sig-boutons .btn-danger { margin-left: 0; }
+.grp-ligne-signalee .grp-bulle { box-shadow: 0 0 0 3px var(--warn-line); }
+.grp-sig-cite { margin: .2rem 0 .6rem; }
+.grp-sig-contexte { display: flex; align-items: center; gap: .4rem; flex-wrap: wrap; }
+.grp-sig-contexte input { width: 5rem; }
+.grp-sig-avertissement { margin: .6rem 0 0; padding: .5rem .7rem; border-left: 3px solid var(--warn-line); background: var(--warn-bg); font-size: .85rem; border-radius: 0 var(--rayon) var(--rayon) 0; }
+.grp-mes-signalements { margin-top: .8rem; font-size: .85rem; }
+.grp-mes-signalements ul { margin: .2rem 0 0; padding-left: 1.2rem; }
+.grp-mes-signalements li { margin: .15rem 0; }
+.admin-ligne-signalee td { background: var(--warn-bg); }
+
+/* ---------- proposer (lot G) ----------
+   Le fanion d'une section : dans le titre, a droite, discret tant qu'on ne
+   le survole pas ; toujours la, parce qu'un bouton qu'on ne trouve pas
+   n'existe pas. Sur tactile il n'y a pas de survol : on le laisse a
+   demi-visible plutot qu'invisible. */
+.prop-drapeau {
+  float: right; margin: 0 0 0 .6rem; padding: .1rem .3rem;
+  border: 0; background: none; color: var(--texte-doux); opacity: .45;
+  cursor: pointer; border-radius: 6px; font: inherit; line-height: 1;
+}
+.prop-drapeau svg { width: 1rem; height: 1rem; vertical-align: -2px; }
+.prop-drapeau:hover, .prop-drapeau:focus-visible { opacity: 1; color: var(--accent); background: var(--fond-doux, rgba(0,0,0,.05)); }
+.fiche h2:hover .prop-drapeau { opacity: .8; }
+/* Le ⚑ d'un bloc (lot L) : un panneau, un bandeau, une grille n'ont pas de
+   titre où le glisser — il se cale en haut à droite du bloc, qui devient
+   donc son référent de position. Plus effacé encore qu'un ⚑ de titre (ces
+   blocs sont nombreux) ; il se révèle au survol du bloc, et reste toujours
+   atteignable au clavier. */
+[data-zone] { position: relative; }
+.prop-drapeau-bloc {
+  position: absolute; top: .3rem; right: .35rem; float: none; margin: 0;
+  z-index: 3; opacity: .2; transition: opacity .12s;
+}
+[data-zone]:hover > .prop-drapeau-bloc { opacity: .6; }
+.prop-drapeau-bloc:hover, .prop-drapeau-bloc:focus-visible { opacity: 1; }
+@media (hover: none) { .prop-drapeau-bloc { opacity: .45; } }
+.prop-dialogue { max-width: 32rem; }
+/* Ce qui est visé, dit en clair et changeable sans quitter la fenêtre
+   (lot L). L'identifiant n'apparaît jamais : on ne montre que des mots. */
+.prop-cible {
+  display: flex; gap: .6rem; align-items: center; justify-content: space-between;
+  margin: .2rem 0 .6rem; padding: .5rem .6rem; border: 1px solid var(--bord);
+  border-radius: 8px; background: var(--fond-doux, rgba(0,0,0,.04));
+}
+.prop-cible-dit { display: flex; flex-direction: column; gap: .05rem; min-width: 0; }
+.prop-cible-dit strong { overflow-wrap: anywhere; }
+.prop-choisir { margin: 0 0 .7rem; }
+.prop-choisir input[type="search"] {
+  width: 100%; padding: .4rem .6rem; border: 1px solid var(--bord-fort);
+  border-radius: 8px; font: inherit; background: var(--fond-carte); color: var(--texte);
+}
+.prop-zones { list-style: none; margin: .4rem 0 0; padding: 0; max-height: 13rem; overflow: auto; }
+.prop-zones li { margin: 0; }
+.prop-zone {
+  display: flex; flex-direction: column; gap: .05rem; width: 100%; text-align: left;
+  padding: .35rem .5rem; border: 0; border-radius: 6px; background: none;
+  color: var(--texte); font: inherit; cursor: pointer;
+}
+.prop-zone:hover, .prop-zone:focus-visible { background: var(--fond-doux, rgba(0,0,0,.06)); }
+.prop-dialogue #prop-types label[hidden] { display: none; }
+.prop-dialogue select { width: 100%; padding: .45rem .6rem; border: 1px solid var(--bord-fort); border-radius: 8px; font: inherit; background: var(--fond-carte); color: var(--texte); margin-top: .2rem; }
+.prop-dialogue .etat { margin-top: .6rem; }
+.prop-compte { min-height: 1.2em; margin: .3rem 0 0; font-size: .82rem; color: var(--texte-doux); }
+.portail-proposer { margin: 1.6rem 0 0; display: flex; gap: .5rem; align-items: center; flex-wrap: wrap; }
+.portail-proposer .btn svg { width: .95rem; height: .95rem; }
+.prop-export-choix { display: inline-flex; gap: .3rem; align-items: center; margin-left: .6rem; }
+.mes-propositions .demande-carte { margin: .6rem 0; }
+
+/* ---------- la documentation rendue (lot G) ----------
+   Un document, pas une fiche : plus large (les tableaux du journal de
+   conception ont quatre colonnes), les tableaux défilent seuls, le code en ligne se
+   coupe plutôt que de déborder (chemins, adresses), les titres de
+   niveau 3 et 4 se distinguent. */
+.page-texte.doc-page { max-width: 52rem; }
+.doc .table-scroll { overflow-x: auto; margin: .6rem 0 1.2rem; }
+.doc table th { width: auto; white-space: normal; }
+.doc table th, .doc table td { font-size: .88rem; }
+.doc code { overflow-wrap: anywhere; }
+.doc pre { overflow: auto; padding: .7rem .9rem; border-left: 3px solid var(--accent); background: var(--fond-doux); border-radius: 0 var(--rayon) var(--rayon) 0; font-size: .84rem; line-height: 1.45; }
+.doc pre code { background: none; padding: 0; font-size: inherit; }
+.doc h1 { font-size: 1.5rem; margin: 2rem 0 .8rem; }
+.doc h2 { font-size: 1.22rem; margin: 2.2rem 0 .8rem; padding-bottom: .35rem; border-bottom: 2px solid var(--accent); scroll-margin-top: 4.2rem; }
+.doc h3 { font-size: 1.04rem; margin: 1.6rem 0 .5rem; color: var(--accent); scroll-margin-top: 4.2rem; }
+.doc h4 { font-size: .95rem; margin: 1.2rem 0 .4rem; scroll-margin-top: 4.2rem; }
+.doc blockquote { margin: .8rem 0; padding: .4rem .9rem; border-left: 3px solid var(--bord-fort); color: var(--texte-doux); }
+.doc blockquote p { margin: .3rem 0; }
+.doc ul, .doc ol { margin: .4rem 0 1rem; padding-left: 1.4rem; }
+.doc li { margin-bottom: .3rem; line-height: 1.55; }
+.doc hr { border: 0; border-top: 1px solid var(--bord); margin: 1.6rem 0; }
+.doc-liste { list-style: none; padding: 0; margin: 0 0 1.5rem; }
+.doc-liste li { padding: .6rem 0; border-bottom: 1px solid var(--bord); font-size: .92rem; line-height: 1.5; }
+.doc-liste a { color: var(--accent); text-decoration: none; }
+.doc-liste a:hover { text-decoration: underline; }
+/* les parties du journal de conception, rangées sous son sommaire */
+.doc-liste .doc-liste { margin: .4rem 0 0 1.2rem; border-left: 2px solid var(--bord); padding-left: .8rem; }
+.doc-liste .doc-liste li:last-child { border-bottom: 0; }
+
+/* ---------- la carte du site (lot G) ---------- */
+.page-texte.carte-site { max-width: 62rem; }
+.carte-filtre { width: 100%; box-sizing: border-box; padding: .5rem .7rem; border: 1px solid var(--bord-fort); border-radius: 8px; font: inherit; background: var(--fond-carte); color: var(--texte); }
+.carte-table { width: 100%; border-collapse: collapse; font-size: .86rem; }
+.carte-table th { width: auto; white-space: nowrap; }
+.carte-table td { vertical-align: top; }
+.carte-table td:first-child { min-width: 14rem; }
+.carte-chip { display: inline-block; margin: .1rem .15rem .1rem 0; padding: .05rem .45rem; border-radius: 999px; font-size: .78rem; font-family: ui-monospace, "DejaVu Sans Mono", Menlo, Consolas, monospace; text-decoration: none; border: 1px solid var(--bord-fort); color: var(--texte); background: var(--fond-doux); }
+a.carte-chip:hover { border-color: var(--accent); color: var(--accent); }
+.carte-chip-sql { border-color: color-mix(in srgb, var(--accent) 55%, var(--bord-fort)); }
+.carte-chip-table { border-style: dashed; }
+.carte-chip-regle { background: var(--warn-bg); border-color: var(--warn-line); }
+.carte-chip-route { font-size: .74rem; }
+.carte-chip .c-note { font-family: inherit; font-size: .72rem; }
+.carte-ref { font-family: ui-monospace, "DejaVu Sans Mono", Menlo, Consolas, monospace; font-size: .76rem; color: var(--texte-doux); white-space: nowrap; }
+.carte-public { color: var(--warn-line); }
+.carte-inconnu { color: var(--warn-line); font-size: .78rem; }
+.carte-migration { margin: 0 0 1rem; padding: .6rem .9rem; border: 1px solid var(--bord); border-radius: var(--rayon); scroll-margin-top: 4.2rem; }
+.carte-migration h3 { margin: 0 0 .2rem; font-size: .98rem; color: var(--texte); }
+.carte-migration dl { margin: .4rem 0 0; display: grid; grid-template-columns: max-content 1fr; gap: .3rem .8rem; font-size: .86rem; }
+.carte-migration dt { color: var(--texte-doux); font-weight: 600; }
+.carte-migration dd { margin: 0; }
+.carte-site :target { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 6px; }
+.grp-p-ligne { display: flex; gap: .5rem; flex-wrap: wrap; align-items: center; margin: .4rem 0 .6rem; }
+.grp-p-ligne select { flex: 1 1 10rem; min-width: 0; padding: .45rem .6rem; border: 1px solid var(--bord-fort); border-radius: 8px; font: inherit; background: var(--fond-carte); color: var(--texte); }
+.grp-dialogue-invitation .inv-autres { margin-top: .8rem; padding-top: .6rem; border-top: 1px dashed var(--bord-fort); }
+.grp-dialogue-invitation .inv-autres h3 { margin: 0 0 .3rem; font-size: .95rem; }
+.grp-dialogue-invitation .inv-autres-liste { list-style: none; margin: 0; padding: 0; font-size: .85rem; }
+.grp-dialogue-invitation .inv-autres-liste li { display: flex; justify-content: space-between; gap: .6rem; padding: .25rem 0; border-bottom: 1px solid var(--bord); }
+.grp-dialogue-invitation .inv-pseudo { margin-top: .9rem; padding-top: .7rem; border-top: 1px dashed var(--bord-fort); }
+.grp-dialogue-invitation .inv-pseudo label { display: block; font-size: .85rem; font-weight: 600; margin-bottom: .3rem; }
+.grp-dialogue-invitation .inv-pseudo-champ { flex: 1 1 8rem; min-width: 0; padding: .45rem .6rem; border: 1px solid var(--bord-fort); border-radius: 8px; font: inherit; font-size: .9rem; background: var(--fond-carte); color: var(--texte); }
+
+/* les formulaires des dialogues */
+.grp-form label { display: block; margin-top: .55rem; font-size: .85rem; font-weight: 600; }
+.grp-form input[type=text], .grp-form input[type=date], .grp-form input[type=time], .grp-form textarea {
+  width: 100%; box-sizing: border-box; padding: .55rem .7rem; border: 1px solid var(--bord-fort); border-radius: 10px;
+  font: inherit; background: var(--fond-carte); color: var(--texte); margin-top: .2rem;
+}
+.grp-form h2 { margin: 0 0 .4rem; }
+@media (max-width: 600px) {
+  /* les actions d'une ligne de membre passent dessous : « nommé par » et
+     trois boutons ne tiennent pas côte à côte sur un téléphone */
+  .grp-membres li { flex-wrap: wrap; }
+  .grp-membre-actions { flex-basis: 100%; padding-left: 3.1rem; }
+  .grp-ligne { max-width: 92%; }
+  .grp-fil { max-height: 55vh; }
+}
+
+
+.btn-mini {
+  padding: .25rem .5rem;
+  font-size: .76rem;
+  border-radius: 7px;
+  white-space: nowrap;
+}
+.btn-mini:disabled { opacity: .55; cursor: default; }
+.btn-mini.est-actuel {
+  border-color: var(--ok-bord);
+  background: var(--ok-fond);
+  color: var(--ok-texte);
+  opacity: 1;
+  font-weight: 600;
+}
+
+.admin-aide { margin: 0 0 1.5rem; font-size: .88rem; }
+.admin-aide summary { cursor: pointer; color: var(--texte-doux); }
+.admin-aide th { white-space: nowrap; vertical-align: top; }
+
+.tableau-entete-filtre {
+  display: flex;
+  justify-content: flex-end;
+  padding: .5rem 0;
+  margin-bottom: .5rem;
+}
+.ligne-vide td { color: var(--texte-doux); font-style: italic; text-align: center; padding: 1.2rem .5rem; }
+
+.admin-roles-filtre { 
+  display: flex; 
+  gap: .3rem; 
+  flex-wrap: nowrap;
+}
+
+.btn-filtre-role {
+  padding: .25rem .5rem;
+  font-size: .76rem;
+  border-radius: 7px;
+  white-space: nowrap;
+  border: 1px solid var(--bord-fort);
+  background: var(--fond);
+  color: var(--texte);
+  cursor: pointer;
+  font-family: inherit;
+  transition: background-color .15s ease, border-color .15s ease;
+}
+
+.btn-filtre-role:hover:not(.est-actif) {
+  border-color: var(--accent);
+  background: var(--fond-doux);
+}
+
+.btn-filtre-role.est-actif {
+  border-color: var(--ok-bord);
+  background: var(--ok-fond);
+  color: var(--ok-texte);
+  font-weight: 600;
+}
+
+.tri-colonne {
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+  position: relative;
+  padding-right: 1.8rem;
+  transition: background-color .15s ease, color .15s ease;
+}
+
+.tri-colonne:hover {
+  background-color: var(--fond-doux);
+  color: var(--accent);
+}
+
+.tri-colonne::after {
+  content: "";
+  position: absolute;
+  right: .4rem;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 0;
+  height: 0;
+  opacity: 0;
+  transition: opacity .15s ease;
+}
+
+.tri-colonne.tri-asc::after {
+  border-left: .35rem solid transparent;
+  border-right: .35rem solid transparent;
+  border-bottom: .4rem solid currentColor;
+  opacity: 1;
+}
+
+.tri-colonne.tri-desc::after {
+  border-left: .35rem solid transparent;
+  border-right: .35rem solid transparent;
+  border-top: .4rem solid currentColor;
+  opacity: 1;
+}
+
+/* Un tableau qui déborde doit défiler DANS sa boîte, jamais pousser la page
+   entière à défiler de côté. */
+/* Une boite bornee et defilante : la liste des comptes et le journal
+   grandissent avec la promo, la page ne doit pas. L'en-tete reste colle en
+   haut pendant qu'on defile. */
+.tableau-large { overflow: auto; max-height: 26rem; margin-bottom: 1.5rem; border: 1px solid var(--bord); border-radius: var(--rayon); }
+.tableau-large table { width: 100%; min-width: 38rem; }
+.tableau-large thead th { position: sticky; top: 0; background: var(--fond-carte); z-index: 1; }
+
+/* ---------- onglets de l'administration ---------- */
+.admin-onglets { display: flex; gap: .3rem; margin: .8rem 0 1.2rem; border-bottom: 1px solid var(--bord); flex-wrap: wrap; }
+.admin-onglet {
+  background: none; border: 0; border-bottom: 3px solid transparent; padding: .5rem .9rem;
+  font: inherit; font-weight: 600; color: var(--texte-doux); cursor: pointer;
+}
+.admin-onglet:hover { color: var(--texte); }
+/* L'onglet actif est le texte le PLUS lisible, et l'accent passe sous lui.
+   Avec « color: var(--accent) », une page sans module prenait le repli #444 :
+   l'onglet choisi devenait plus sombre que les autres sur fond sombre — l'état
+   se lisait à l'envers. Le trait garde la couleur du module quand il y en a. */
+.admin-onglet.est-actif { color: var(--texte); border-bottom-color: var(--accent); }
+.admin-badge {
+  display: inline-block; min-width: 1.3em; padding: 0 .4em; margin-left: .3em; border-radius: 1em;
+  background: var(--warn-line); color: #fff; font-size: .75rem; line-height: 1.5; text-align: center;
+}
+.admin-badge[hidden] { display: none; }
+.admin-badge-neutre { background: var(--texte-doux); }
+
+.oeil {
+  position: absolute;
+  top: .72rem;
+  right: .55rem;
+  display: flex;
+  padding: .3rem;
+  border: 0;
+  border-radius: 8px;
+  background: none;
+  color: var(--texte-doux);
+  cursor: pointer;
+  transition: color .15s ease, background .15s ease;
+}
+.oeil svg { width: 1.15rem; height: 1.15rem; }
+.oeil:hover { color: var(--texte); background: var(--fond-doux); }
+.oeil:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+/* Les vues de la carte de connexion sont exclusives : « hidden » doit gagner
+   contre tout affichage que porterait par ailleurs le conteneur. */
+.vue[hidden] { display: none; }
+
+#form-mot-de-passe {
+  margin-top: 1.25rem;
+  padding: 1rem;
+  border: 1px solid var(--bord);
+  border-radius: 12px;
+  background: var(--fond-doux);
+}
+
+#form-mot-de-passe label {
+  color: var(--texte);
+}
+
+.btn-large {
+  width: 100%;
+  justify-content: center;
+  padding: .62rem 1rem;
+  font-size: .93rem;
+}
+.btn-large svg { width: 1.05rem; height: 1.05rem; }
+
+/* séparateur « ou » entre les deux façons de se connecter */
+.ou {
+  display: flex;
+  align-items: center;
+  gap: .8rem;
+  margin: 1.1rem 0;
+  color: var(--texte-doux);
+  font-size: .8rem;
+}
+.ou::before, .ou::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--bord);
+}
+
+.connexion-maintenance {
+  margin: 0 0 1rem;
+  padding: .6rem .8rem;
+  border: 1px solid var(--warn-line);
+  border-radius: 8px;
+  background: var(--warn-bg);
+  color: var(--warn-line);
+  font-size: .86rem;
+}
+
+/* messages : envoi en cours, lien parti, refus */
+.etat {
+  margin-top: 1rem;
+  padding: .6rem .8rem;
+  border-radius: 8px;
+  font-size: .88rem;
+  border: 1px solid var(--bord);
+}
+.etat[hidden] { display: none; }
+.etat-info   { background: var(--fond-doux); color: var(--texte-doux); }
+.etat-succes {
+  background: var(--ok-fond);
+  border-color: var(--ok-bord);
+  color: var(--ok-texte);
+}
+.etat-erreur { background: var(--warn-bg); border-color: var(--warn-line); color: var(--warn-line); }
+
+.connexion-carte .c-note {
+  margin: 1.2rem 0 0;
+  font-size: .8rem;
+  color: var(--texte-doux);
+}
+
+/* ==========================================================================
+   Le portail : les outils de la promo
+   ==========================================================================
+
+   Deux partis pris.
+
+   Rien ne distingue les outils selon celui qui les a ecrits : pour la
+   personne qui consulte, c'est un seul service.
+
+   Et on montre plutot qu'on explique. Une carte tient en un pictogramme, un
+   nom, trois mots d'indication et des fleches vers les outils auxquels elle
+   est reliee. Pas de paragraphe : ce qui se saisit d'un coup d'oeil ne doit
+   pas avoir a etre lu.
+   ========================================================================== */
+
+.hero-portail { padding: 2.2rem 0 1.5rem; }
+.hero-portail p {
+  margin: 0;
+  color: var(--texte-doux);
+  font-size: .92rem;
+}
+
+.grille-apps {
+  grid-template-columns: repeat(auto-fill, minmax(12.5rem, 1fr));
+  gap: .75rem;
+}
+
+.carte.app {
+  padding: .95rem 1rem 1rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.carte.app .a-ico {
+  width: 1.5rem;
+  height: 1.5rem;
+  color: var(--accent);
+  margin-bottom: .55rem;
+}
+.carte.app .a-ico svg { width: 100%; height: 100%; display: block; }
+
+.carte.app .a-nom {
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: -.01em;
+}
+
+.carte.app .a-meta {
+  font-size: .78rem;
+  color: var(--texte-doux);
+  margin-top: .15rem;
+}
+
+/* Les liens entre outils : une fleche et un nom. Le rapport se lit sans
+   qu'on ait a le formuler. */
+.carte.app .a-liens {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .3rem;
+  margin-top: .7rem;
+}
+.a-lien {
+  display: inline-flex;
+  align-items: center;
+  gap: .25rem;
+  font-size: .72rem;
+  color: var(--texte-doux);
+  border: 1px solid var(--bord);
+  border-radius: 999px;
+  padding: .1rem .5rem .12rem;
+  white-space: nowrap;
+}
+.a-lien .fl {
+  color: var(--accent);
+  font-size: .85rem;
+  line-height: 1;
+}
+
+.a-bientot {
+  font-size: .64rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .09em;
+  vertical-align: middle;
+  padding: .1rem .4rem;
+  margin-left: .3rem;
+  border: 1px solid var(--bord-fort);
+  border-radius: 999px;
+  color: var(--texte-doux);
+}
+
+/* --------------------------------------------------------------------------
+   « À travailler avec » — ce que les autres outils rattachent à cette page
+   --------------------------------------------------------------------------
+
+   Ce bloc est rempli par le navigateur à partir des index publiés par les
+   autres outils. Il reste caché tant qu'il n'y a rien à montrer : une
+   section vide serait pire que pas de section du tout.
+   -------------------------------------------------------------------------- */
+
+.liees[hidden] { display: none; }
+
+.grille-liees {
+  grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
+}
+
+.carte.lien-outil .c-code {
+  font-size: .72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .09em;
+}
+.carte.lien-outil .c-nom {
+  font-size: .95rem;
+  font-weight: 600;
+  margin: .35rem 0 .3rem;
+}
+.carte.lien-outil.sans-lien { cursor: default; opacity: .72; }
+
+/* ==========================================================================
+   Pages de texte : données personnelles, mon compte
+   ========================================================================== */
+
+.page-texte { max-width: 44rem; }
+.page-texte p { line-height: 1.65; }
+.page-texte table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: .4rem 0 1.4rem;
+  font-size: .92rem;
+}
+.page-texte table th,
+.page-texte table td {
+  text-align: left;
+  vertical-align: top;
+  padding: .55rem .7rem;
+  border-bottom: 1px solid var(--bord);
+}
+.page-texte table th {
+  width: 12rem;
+  font-weight: 600;
+  color: var(--texte-doux);
+  font-size: .85rem;
+}
+.page-texte code {
+  background: var(--fond-doux);
+  border-radius: 4px;
+  padding: .05rem .3rem;
+  font-size: .9em;
+}
+
+/* Une suppression définitive ne doit pas ressembler à un bouton ordinaire :
+   la couleur est le dernier avertissement avant la confirmation. */
+.btn-danger {
+  border-color: var(--warn-line);
+  color: var(--warn-line);
+}
+.btn-danger:hover {
+  background: var(--warn-bg);
+  border-color: var(--warn-line);
+  color: var(--warn-line);
+}
+
+/* Le consentement, sur la page de connexion. Volontairement lisible et non
+   pré-coché : une case cochée d'avance n'est pas un consentement. */
+.consentement {
+  display: flex;
+  align-items: flex-start;
+  gap: .55rem;
+  margin: .9rem 0 1.1rem;
+  font-size: .84rem;
+  line-height: 1.5;
+  color: var(--texte-doux);
+  text-align: left;
+  cursor: pointer;
+}
+.consentement input {
+  margin: .15rem 0 0;
+  width: auto;
+  flex: none;
+  accent-color: var(--accent);
+}
+.consentement a { color: var(--accent); }
+
+/* Les droits doivent être trouvables : un droit qu'on ne sait pas où exercer
+   n'est pas disponible. D'où ces deux liens sur chaque page. */
+.pied-liens {
+  display: inline-flex;
+  gap: 1rem;
+  margin-left: .8rem;
+}
+.pied-liens a { color: var(--texte-doux); }
+.pied-liens a:hover { color: var(--accent); }
+
+/* Sur un écran étroit, une colonne d'intitulés de 12 rem ne laisse plus rien
+   au contenu : on empile. */
+@media (max-width: 700px) {
+  .page-texte table th,
+  .page-texte table td { display: block; width: auto; }
+  .page-texte table th { border-bottom: 0; padding-bottom: 0; }
+  .page-texte table td { padding-top: .2rem; }
+
+  /* … sauf les vrais tableaux à plusieurs colonnes. La règle ci-dessus
+     empile les cellules, ce qui va pour une liste étiquette / valeur mais
+     détruit un tableau où la colonne porte le sens. Ceux-là défilent
+     latéralement dans leur boîte, ce qui garde les lignes lisibles. */
+  .page-texte .tableau-large table th,
+  .page-texte .tableau-large table td {
+    display: table-cell;
+    width: auto;
+  }
+  .page-texte .tableau-large table th {
+    border-bottom: 1px solid var(--bord);
+    padding-bottom: .5rem;
+  }
+}
+
+/* Le texte du consentement est une phrase à lire, pas une étiquette de champ :
+   il ne doit pas hériter du gras des <label> du formulaire. */
+.consentement span { font-weight: 400; }
+
+/* Un bouton désactivé doit se voir désactivé, sinon on clique et rien ne se
+   passe — et on croit que le site est cassé. */
+.btn[disabled] {
+  opacity: .45;
+  cursor: not-allowed;
+  filter: none;
+}
+.btn[disabled]:hover { filter: none; }
+
+/* ==========================================================================
+   Connexion : fournisseurs externes et liens secondaires
+   ========================================================================== */
+
+.btn-fournisseur {
+  width: 100%;
+  justify-content: flex-start;
+  gap: .6rem;
+  margin-bottom: .45rem;
+}
+.btn-fournisseur svg { width: 1.05rem; height: 1.05rem; flex: none; }
+
+/* Un lien qui déclenche une action, pas une navigation : c'est un bouton,
+   même s'il en a l'apparence d'un lien. Le dire à l'accessibilité compte
+   autant que de le montrer. */
+.liens-connexion {
+  display: flex;
+  justify-content: space-between;
+  gap: .8rem;
+  margin-top: .7rem;
+  font-size: .82rem;
+}
+.lien-bouton {
+  background: none;
+  border: 0;
+  padding: 0;
+  color: var(--accent);
+  cursor: pointer;
+  font: inherit;
+  text-decoration: underline;
+}
+.lien-bouton:hover { filter: brightness(1.2); }
+
+/* « display: flex » l'emporte sur le display:none implicite de [hidden] :
+   sans cette règle, le bloc de consentement resterait visible en mode
+   connexion, où il n'a rien à faire. */
+.consentement[hidden] { display: none; }
+
+/* Une carte réservée reste VISIBLE et porte une pastille disant ce qu'elle
+   demande. La cacher était plus prudent en apparence, et contre-productif en
+   pratique : le portail d'un visiteur non connecté paraissait vide, donc sans
+   intérêt, au moment précis où on lui demande de créer un compte.
+
+   Le verrou est signalé par une teinte plus sourde, pas par un grisage franc :
+   la carte reste cliquable, et ce qu'elle mène à lire est utile. */
+/* Un raccourci qui ne mene nulle part ne doit pas s'afficher : il se revele
+   quand le role est connu, jamais avant. C'est l'inverse exact du choix fait
+   pour les cartes, et pour la meme raison - ce qui est utile a montrer depend
+   de ce que la personne peut en faire. */
+[data-role-cache] { display: none !important; }
+
+.carte.app.a-verrouille .a-ico,
+.carte.app.a-verrouille .a-meta,
+.carte.app.a-verrouille .a-liens { opacity: .55; }
+
+.a-acces {
+  font-size: .64rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .09em;
+  vertical-align: middle;
+  white-space: nowrap;
+  padding: .1rem .4rem;
+  margin-left: .3rem;
+  border: 1px solid var(--compte-fond);
+  border-radius: 999px;
+  color: var(--compte-fond);
+}
+
+/* La pastille des messages non lus (lot F) : sur la carte « Groupes » du
+   portail, sur chaque carte de la liste des groupes. Un disque plein de
+   la couleur d'alerte, le nombre en blanc : c'est ce que toutes les
+   messageries font, on ne l'apprend a personne. */
+.nl-pastille {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.35em;
+  height: 1.35em;
+  padding: 0 .4em;
+  margin-left: .4rem;
+  border-radius: 999px;
+  background: var(--warn-line);
+  color: #fff;
+  font-size: .72rem;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0;
+  text-transform: none;
+  vertical-align: middle;
+  flex: 0 0 auto;
+}
+.grp-carte-non-lus .grp-carte-titre { font-weight: 800; }
+
+/* --------------------------------------------------------------------------
+   La messagerie (15 septembre) : deux volets, comme toute messagerie
+   --------------------------------------------------------------------------
+   A gauche, la barre des conversations (groupes, invitations, contacts) ;
+   a droite, la conversation ouverte. Sur un petit ecran, l'un OU l'autre :
+   la liste sur /groupes/, la conversation en pleine page sur groupe.html,
+   avec « ← » pour revenir. Rien ici n'est decoratif : des lignes denses,
+   un avatar, le dernier message, l'heure, le nombre de non-lus. */
+body.messagerie .enveloppe.msg-app { max-width: 84rem; }
+.msg-app {
+  display: grid;
+  grid-template-columns: 21rem minmax(0, 1fr);
+  min-height: calc(100vh - 11rem);
+  margin-top: 1rem;
+  border: 1px solid var(--bord);
+  border-radius: var(--rayon);
+  background: var(--fond-carte);
+  overflow: hidden;
+}
+.msg-app > .etat { grid-column: 1 / -1; margin: 0; border-radius: 0; }
+.msg-cote { display: flex; flex-direction: column; border-right: 1px solid var(--bord); min-width: 0; background: var(--fond-carte); }
+.msg-cote-tete { display: flex; align-items: center; justify-content: space-between; gap: .6rem; padding: .8rem .9rem .4rem; }
+.msg-titre { margin: 0; font-size: 1.25rem; letter-spacing: -.01em; }
+.msg-cote-actions { display: flex; gap: .3rem; align-items: center; }
+.msg-cote-actions .btn-icone { width: 2.1rem; height: 2.1rem; }
+.msg-cote-actions .btn-accent.btn-icone { font-size: 1.3rem; line-height: 1; }
+.msg-recherche { padding: .2rem .9rem .5rem; }
+.msg-recherche input { width: 100%; box-sizing: border-box; padding: .5rem .8rem; border: 1px solid var(--bord); border-radius: 999px; background: var(--fond-doux); color: var(--texte); font: inherit; font-size: .9rem; }
+.msg-recherche input:focus { outline: none; border-color: var(--accent); background: var(--fond-carte); }
+.msg-volets { display: flex; gap: .2rem; padding: 0 .9rem; border-bottom: 1px solid var(--bord); }
+.msg-volet-bouton { flex: 1; padding: .5rem .3rem; border: 0; border-bottom: 2px solid transparent; background: none; color: var(--texte-doux); font: inherit; font-size: .88rem; font-weight: 600; cursor: pointer; display: inline-flex; justify-content: center; align-items: center; gap: .3rem; }
+.msg-volet-bouton.est-actif { color: var(--texte); border-bottom-color: var(--accent); }
+.msg-volet-bouton:hover, .msg-volet-bouton:focus-visible { color: var(--texte); outline: none; }
+.msg-volet { flex: 1; overflow: auto; min-height: 0; }
+.msg-sous-titre { margin: .7rem .9rem .2rem; font-size: .7rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--texte-doux); }
+.msg-note { margin: .8rem .9rem; font-size: .85rem; }
+.msg-liste { display: flex; flex-direction: column; }
+.msg-ligne { position: relative; display: flex; gap: .7rem; align-items: center; padding: .6rem .9rem; border-bottom: 1px solid var(--bord); color: inherit; }
+.msg-ligne:last-child { border-bottom: 0; }
+.msg-ligne:hover, .msg-ligne:focus-within { background: var(--fond-doux); }
+.msg-ligne.est-active { background: var(--accent-soft); box-shadow: inset 3px 0 0 var(--accent); }
+.msg-ligne-lien { position: absolute; inset: 0; z-index: 0; border-radius: 0; }
+.msg-ligne-lien:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+.msg-ligne > .grp-avatar { flex: none; width: 2.6rem; height: 2.6rem; font-size: .9rem; }
+.grp-avatar-groupe { border-radius: 12px; }
+.msg-ligne-corps { flex: 1; min-width: 0; }
+.msg-ligne-haut, .msg-ligne-bas { display: flex; align-items: center; gap: .5rem; }
+.msg-ligne-nom { flex: 1; min-width: 0; font-weight: 600; font-size: .95rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.msg-ligne-heure { flex: none; font-size: .72rem; color: var(--texte-doux); }
+.msg-ligne-apercu { flex: 1; min-width: 0; font-size: .84rem; color: var(--texte-doux); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.msg-ligne-non-lue .msg-ligne-nom { font-weight: 800; }
+.msg-ligne-non-lue .msg-ligne-apercu { color: var(--texte); }
+.msg-ligne-non-lue .msg-ligne-heure { color: var(--accent); font-weight: 700; }
+.msg-ligne .nl-pastille { position: relative; z-index: 1; margin-left: 0; }
+.msg-ligne-menu { position: relative; z-index: 1; flex: none; width: 1.7rem; height: 1.7rem; border: 1px solid transparent; border-radius: 8px; background: none; color: var(--texte-doux); font: inherit; font-size: 1rem; line-height: 1; cursor: pointer; opacity: 0; }
+.msg-ligne:hover .msg-ligne-menu, .msg-ligne:focus-within .msg-ligne-menu, .msg-ligne-menu:focus-visible { opacity: 1; }
+.msg-ligne-menu:hover, .msg-ligne-menu:focus-visible { border-color: var(--bord-fort); background: var(--fond-carte); color: var(--texte); outline: none; }
+@media (hover: none) { .msg-ligne-menu { opacity: 1; } }
+.msg-ligne-actions { display: flex; gap: .4rem; margin-top: .35rem; position: relative; z-index: 1; }
+.msg-ligne-invitation { background: var(--accent-soft); }
+.msg-ligne-selectionnable { cursor: pointer; }
+.msg-ligne.est-selectionnee { background: var(--accent-soft); }
+.msg-ligne-case { flex: none; margin: 0; }
+.msg-ajout-contact { display: flex; gap: .4rem; padding: .7rem .9rem .3rem; }
+.msg-ajout-contact input { flex: 1; min-width: 0; padding: .45rem .7rem; border: 1px solid var(--bord-fort); border-radius: 8px; background: var(--fond-carte); color: var(--texte); font: inherit; font-size: .9rem; }
+.msg-cote .grp-selection { margin: .4rem .9rem 0; }
+/* les conversations privees (lot H) : une pastille sur les volets Groupes
+   et Prives (le nombre de conversations ou il reste a lire), l'avatar rond
+   de l'autre (celui d'un groupe est carre), et dans le fil, pas de nom
+   au-dessus des bulles : on sait qui parle */
+.msg-volet-bouton .nl-pastille { margin-left: 0; font-size: .62rem; min-width: 1.15em; height: 1.15em; padding: 0 .3em; }
+.msg-ajout-contact .btn { flex: none; }
+.grp-tete-menu { flex: none; width: 2.1rem; height: 2.1rem; font-size: 1.1rem; line-height: 1; }
+.grp-fil-prive .grp-bulle-nom { display: none; }
+.grp-banniere-privee { border-color: var(--bord-fort); background: var(--fond-doux); }
+/* le chiffrement de bout en bout (lot H, session 2) : l'etat sous le
+   titre, l'empreinte comparable, les fenetres du trousseau (la phrase en
+   douze mots numerotes, les trois mots a retaper), le trait entre l'avant
+   et l'apres, un message illisible */
+.grp-chiffre-etat { margin: .15rem 0 0; font-size: .8rem; }
+.grp-empreinte { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: .95rem; letter-spacing: .04em; line-height: 1.7; word-spacing: .3em; margin: .4rem 0; user-select: all; }
+.cles-dialogue { max-width: 32rem; }
+.cles-dialogue textarea.cles-phrase { width: 100%; box-sizing: border-box; font: inherit; padding: .5rem .7rem; border: 1px solid var(--bord-fort); border-radius: var(--rayon); background: var(--fond-carte); color: var(--texte); }
+.cles-mots { columns: 2; column-gap: 1.5rem; margin: .6rem 0; padding-left: 1.6rem; font-size: 1.05rem; line-height: 1.8; }
+.cles-mots li { break-inside: avoid; font-weight: 600; }
+.cles-actions { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; }
+/* ---------- lot K1 : lier un appareil depuis un autre ----------
+   Le carre, le code et l'empreinte doivent se lire d'un coup d'oeil, et
+   depuis l'autre bout d'un bureau : c'est une comparaison a l'oeil qui
+   tient la securite de ce parcours. */
+.cles-lier .cles-qr { display: flex; justify-content: center; margin: .8rem 0 .4rem; }
+.cles-lier .cles-qr svg { width: 190px; height: 190px; background: #fff; padding: 8px; border-radius: 8px; }
+.cles-code { text-align: center; font-size: 1.05rem; margin: .2rem 0 .8rem; }
+.cles-code strong { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 1.6rem; letter-spacing: .12em; }
+.cles-empreinte { text-align: center; font-size: .9rem; }
+.cles-lier .cles-code-champ {
+  display: block; width: 100%; box-sizing: border-box; margin-top: .3rem;
+  padding: .5rem .7rem; border: 1px solid var(--bord-fort); border-radius: var(--rayon);
+  background: var(--fond-carte); color: var(--texte);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 1.3rem; letter-spacing: .1em;
+}
+.cles-lier .cles-donner-phrase textarea { width: 100%; box-sizing: border-box; font: inherit; padding: .5rem .7rem; border: 1px solid var(--bord-fort); border-radius: var(--rayon); background: var(--fond-carte); color: var(--texte); }
+
+/* ---------- lot K2 : les passkeys ----------
+   La liste vit dans une <li> des paramètres : chaque passkey, sa date, et
+   « retirer » juste après — rien de plus, on ne gère pas un parc. */
+#par-chiffre-passkeys button.lien-bouton { font-size: .85rem; }
+#par-chiffre-passkeys span { white-space: nowrap; }
+
+.cles-verif-champs { display: flex; flex-wrap: wrap; gap: .6rem; margin: .4rem 0; }
+.cles-verif-champs label { display: flex; flex-direction: column; gap: .2rem; font-size: .85rem; color: var(--texte-doux); }
+.cles-verif-champs input { font: inherit; padding: .4rem .6rem; border: 1px solid var(--bord-fort); border-radius: 8px; background: var(--fond-carte); color: var(--texte); width: 9rem; }
+.cles-empreintes h3 { margin: .8rem 0 .1rem; font-size: .9rem; }
+.grp-trait-chiffre { color: var(--accent); text-transform: none; }
+.grp-texte-illisible { color: var(--texte-doux); font-style: italic; }
+.par-liste { padding-left: 1.2rem; }
+.par-actions { display: flex; flex-wrap: wrap; gap: .5rem; }
+
+/* la conversation, a droite */
+.msg-conv { display: flex; flex-direction: column; min-width: 0; min-height: 0; }
+.msg-conv > .etat { margin: .6rem .9rem 0; }
+.msg-conv-tete { margin: 0; padding: .7rem 1rem; border-bottom: 1px solid var(--bord); gap: .7rem; flex-wrap: nowrap; }
+.msg-conv-tete h1 { font-size: 1.15rem; margin: 0; }
+.msg-conv-tete .grp-tete-texte { flex: 1; min-width: 0; }
+.msg-conv-tete .grp-tete-texte .c-note { margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.msg-retour { display: none; flex: none; }
+.msg-conv .admin-onglets { margin: 0; padding: 0 1rem; }
+.msg-conv .admin-section { padding: .7rem 1rem 1rem; }
+.msg-conv .grp-fil { max-height: calc(100vh - 24rem); min-height: 18rem; border-left: 0; border-right: 0; border-radius: 8px; }
+.msg-conv-vide { align-items: center; justify-content: center; text-align: center; color: var(--texte-doux); padding: 2rem; }
+.msg-vide { max-width: 26rem; }
+.msg-vide-ico { width: 3rem; height: 3rem; margin: 0 auto .8rem; color: var(--accent); opacity: .7; }
+.msg-vide-ico svg { width: 100%; height: 100%; }
+.msg-vide p { margin: .4rem 0; }
+.msg-vide strong { color: var(--texte); }
+
+/* la pastille dans le coin de l'icone « Messages » de l'en-tete */
+.btn-messages { position: relative; }
+.nl-pastille-coin { position: absolute; top: -.35rem; right: -.35rem; margin: 0; font-size: .62rem; min-width: 1.15em; height: 1.15em; padding: 0 .3em; box-shadow: 0 0 0 2px var(--fond); }
+[data-connecte-cache] { display: none !important; }
+
+/* petit ecran : un volet a la fois */
+@media (max-width: 860px) {
+  .msg-app { display: block; border: 0; background: none; min-height: 0; margin-top: .4rem; }
+  .msg-cote { border: 1px solid var(--bord); border-radius: var(--rayon); }
+  .msg-conv-vide { display: none; }
+  .msg-app.msg-ouvert .msg-cote { display: none; }
+  .msg-app.msg-ouvert .msg-conv { border: 1px solid var(--bord); border-radius: var(--rayon); background: var(--fond-carte); }
+  .msg-retour { display: inline-flex; }
+  .msg-conv .grp-fil { max-height: calc(100vh - 21rem); min-height: 14rem; }
+}
+
+/* Les notifications (lot F) : le bandeau qui propose d'activer, et la
+   page des parametres. */
+.notif-bandeau .notif-bandeau-etat { margin-left: .4rem; }
+.notif-bloc { border: 1px solid var(--bord); border-radius: var(--rayon); padding: .9rem 1rem; background: var(--fond-carte); }
+.notif-appareil { display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
+.notif-actions { display: flex; gap: .5rem; flex-wrap: wrap; }
+.notif-choix { border: 0; padding: 0; margin: 1rem 0 .4rem; }
+.notif-choix legend { font-weight: 700; padding: 0; margin-bottom: .4rem; }
+.notif-choix label, .notif-theme label { display: block; padding: .25rem 0; }
+.notif-choix[disabled] { opacity: .6; }
+.notif-theme { display: flex; gap: 1.2rem; flex-wrap: wrap; }
+.rappels-choix { border: 0; padding: 0; margin: .55rem 0 0; }
+.rappels-choix legend { font-weight: 600; font-size: .85rem; padding: 0; }
+.rappels-choix label { display: inline-flex; align-items: center; gap: .3rem; margin: .2rem 1rem 0 0; font-weight: 400; font-size: .85rem; }
+.grp-rappels { white-space: nowrap; }
+
+/* Les deux liens sous le formulaire de connexion : des boutons, parce qu'ils
+   déclenchent une action et ne mènent nulle part. */
+.liens-connexion .lien-bouton {
+  padding: .3rem .1rem;
+  border-radius: 4px;
+}
+.liens-connexion .lien-bouton:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* ==========================================================================
+   Le compte, visible dès la barre du haut
+   ========================================================================== */
+
+.btn-compte {
+  white-space: nowrap;
+  max-width: 10rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Le bandeau d'invitation est caché tant qu'on ne sait pas si la personne est
+   connectée : on ne propose pas de créer un compte à qui en a déjà un. */
+[data-anonyme] { display: none !important; }
+
+/* Le bandeau ne peut pas emprunter --accent-soft : sur le portail, l'accent
+   est celui par defaut, et sa version claire reste claire en theme sombre.
+   On obtenait un fond blanc sous un texte clair, donc illisible. Il porte
+   donc ses propres couleurs, declinees dans les deux themes. */
+.bandeau-compte {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.2rem;
+  flex-wrap: wrap;
+  margin: 0 0 1.4rem;
+  padding: 1rem 1.2rem;
+  border: 1px solid var(--compte-fond);
+  border-left: 3px solid var(--compte-fond);
+  border-radius: var(--rayon);
+  background: var(--compte-bandeau);
+  color: var(--texte);
+}
+.bandeau-compte strong { display: block; font-size: 1rem; color: var(--texte); }
+.bandeau-compte span { font-size: .87rem; color: var(--texte-doux); }
+
+@media (max-width: 560px) {
+  .bandeau-compte { flex-direction: column; align-items: stretch; }
+  .bandeau-compte .btn { justify-content: center; }
+  /* Sur mobile la barre est déjà chargée : le libellé suffit sans le bouton
+     large. */
+  .btn-compte { max-width: 7rem; }
+}
+
+/* Le bouton de compte ne suit pas l'accent du module : il appartient au site,
+   pas à la page. Sur le portail, l'accent par défaut est gris, et le bouton
+   le plus important de la barre y disparaissait. */
+:root {
+  --compte-fond:    #0f4d3f;
+  --compte-texte:   #ffffff;
+  --compte-bandeau: #eaf2ef;
+
+  --ok-fond:  #eaf2ef;
+  --ok-bord:  #9bc4b6;
+  --ok-texte: #0f4d3f;
+}
+:root[data-theme="dark"] {
+  --compte-fond:    #2f8f74;
+  --compte-texte:   #08211b;
+  --compte-bandeau: #16241f;
+
+  --ok-fond:  #16241f;
+  --ok-bord:  #2f8f74;
+  --ok-texte: #7fd4b8;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --compte-fond:    #2f8f74;
+    --compte-texte:   #08211b;
+    --compte-bandeau: #16241f;
+
+    --ok-fond:  #16241f;
+    --ok-bord:  #2f8f74;
+    --ok-texte: #7fd4b8;
+  }
+}
+
+.btn-compte.btn-accent,
+.btn-compte.btn-accent:hover {
+  background: var(--compte-fond);
+  border-color: var(--compte-fond);
+  color: var(--compte-texte);
+}
+.bandeau-compte .btn-accent {
+  background: var(--compte-fond);
+  border-color: var(--compte-fond);
+  color: var(--compte-texte);
+}
+
+/* ---------- la fenêtre du pseudo -------------------------------------------
+   Elle réutilise « .voile » et « .panneau » du panneau d'impression : même
+   objet, mêmes règles. Ne s'ajoute ici que ce qu'un formulaire demande en
+   plus d'une liste d'instructions.
+
+   Pas de bouton de fermeture, et c'est voulu : sans pseudo on ne peut rien
+   signer sans devenir anonyme par accident. Les deux liens du bas — la notice
+   de données et la déconnexion — sont là pour qu'on ne soit pas enfermé : on
+   peut toujours partir, on ne peut pas rester sans nom.
+   -------------------------------------------------------------------------- */
+.panneau-pseudo { max-width: 26rem; }
+
+.panneau-pseudo label {
+  display: block;
+  margin: .9rem 0 .25rem;
+  font-size: .9rem;
+  font-weight: 600;
+}
+
+.panneau-pseudo input {
+  width: 100%;
+  padding: .55rem .7rem;
+  font: inherit;
+  color: var(--texte);
+  background: var(--fond);
+  border: 1px solid var(--bord);
+  border-radius: var(--rayon);
+}
+
+.panneau-pseudo input:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.panneau-pseudo .pied { margin-top: 1rem; }
+
+.panneau-pseudo .pseudo-issues {
+  margin: 1rem 0 0;
+  padding-top: .8rem;
+  border-top: 1px solid var(--bord);
+  text-align: center;
+}
+
+/* ---------- l'option « chercher dans le texte » ----------------------------
+   Elle vit en tête de la liste de résultats, et non à côté du champ : elle
+   n'a de sens que pendant une recherche, et la barre du haut est déjà
+   chargée. Elle est réécrite à chaque frappe avec le reste de la liste.
+   -------------------------------------------------------------------------- */
+.r-option {
+  display: flex;
+  align-items: center;
+  gap: .45rem;
+  padding: .45rem .6rem;
+  margin-bottom: .2rem;
+  border-bottom: 1px solid var(--bord);
+  font-size: .82rem;
+  color: var(--texte-doux);
+  cursor: pointer;
+}
+.r-option input { margin: 0; cursor: pointer; }
+.r-option .r-etat {
+  margin-left: auto;
+  font-style: normal;
+  font-size: .78rem;
+  color: var(--texte-doux);
+  opacity: .8;
+}
+
+/* L'extrait remplace la ligne « module · pages » quand le mot a été trouvé
+   dans le corps : ce qu'on veut voir alors, c'est l'endroit du texte. */
+.r-extrait {
+  font-size: .78rem;
+  line-height: 1.45;
+  color: var(--texte-doux);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* ---------- services reliés au compte ------------------------------------- */
+.id-liste { list-style: none; margin: .6rem 0 0; padding: 0; }
+
+.id-ligne {
+  display: flex;
+  align-items: center;
+  gap: .7rem;
+  flex-wrap: wrap;
+  padding: .6rem .2rem;
+  border-bottom: 1px solid var(--bord);
+}
+.id-ligne:last-child { border-bottom: 0; }
+
+.id-nom { font-weight: 600; min-width: 11rem; }
+
+/* L'état pousse l'action vers la droite : la colonne des boutons reste
+   alignée quelle que soit la longueur du nom du service. */
+.id-etat { flex: 1 1 auto; font-size: .87rem; color: var(--texte-doux); }
+.id-reliee .id-etat { color: var(--ok-texte); }
+
+.btn-petit { padding: .22rem .6rem; font-size: .82rem; }
+
+/* Sortie de la page de connexion. Elle n'a pas la barre du haut : sans ce
+   lien, qui arrive ici sans vouloir de compte n'a aucun moyen d'en repartir
+   — le bouton « précédent » ne ramène nulle part quand on a été redirigé.
+   Le portail se visite très bien sans compte. */
+.c-sortie {
+  margin-top: 1.1rem;
+  padding-top: .9rem;
+  border-top: 1px solid var(--bord);
+}
+
+/* Les fiches lisibles sans compte, annoncées sous la bannière du portail.
+   Sans cette ligne elles étaient ouvertes mais introuvables : le middleware
+   les laissait passer et rien n'y menait. */
+.vitrine {
+  margin: .9rem 0 0;
+  font-size: .9rem;
+  color: var(--texte-doux);
+}
+.vitrine a { color: var(--accent); }
+
+
+/* ---------- quiz ---------- */
+.quiz-form { background: var(--fond-carte); border: 1px solid var(--bord); border-radius: var(--rayon); padding: 1rem 1.2rem; }
+.quiz-form label { display: block; font-size: .85rem; font-weight: 600; margin-top: .6rem; }
+.quiz-form select { width: 100%; box-sizing: border-box; padding: .5rem .7rem; border: 1px solid var(--bord-fort); border-radius: 10px; font: inherit; background: var(--fond-carte); color: var(--texte); margin-top: .2rem; }
+.quiz-fiches { display: flex; flex-direction: column; gap: .3rem; margin: .6rem 0; }
+/* Les themes : une rangee de boutons au-dessus des fiches, et un titre
+   discret par groupe dans la liste. */
+/* Le choix des fiches du quiz : le resume sur la page, la fenetre a
+   cases. Un module ou un theme est une ligne-bouton avec sa propre coche :
+   pleine, vide, ou a moitie quand une partie seulement est cochee. */
+.quiz-selection { margin-bottom: .4rem; }
+.quiz-choisies { display: flex; flex-wrap: wrap; gap: .35rem; flex: 1 1 10rem; }
+.quiz-puce-module { display: inline-flex; align-items: center; gap: .35rem; font-size: .85rem; padding: .15rem .5rem .15rem .2rem; border: 1px solid var(--bord); border-radius: 1em; background: var(--fond-doux); }
+.quiz-puce-module .grp-pastille:not(.grp-pastille-neutre) { background: var(--accent); }
+.sf-groupe { display: flex; align-items: center; gap: .5rem; width: 100%; text-align: left; border: 0; background: none; color: var(--texte); font: inherit; cursor: pointer; padding: .35rem .4rem; border-radius: 8px; }
+.sf-groupe:hover, .sf-groupe:focus-visible { background: var(--fond-doux); outline: none; }
+.sf-groupe-module { font-weight: 600; margin-top: .7rem; }
+/* la ligne d'un module replié : la coche + le nom à gauche, la flèche encadrée à droite */
+.sf-ligne-module { display: flex; align-items: center; gap: .3rem; margin-top: .5rem; }
+.sf-ligne-module .sf-groupe-module { margin-top: 0; flex: 1 1 auto; min-width: 0; flex-wrap: wrap; }
+.sf-compte-module { font-weight: 400; }
+.sf-deplier { flex: none; width: 2rem; height: 2rem; border: 1px solid var(--bord-fort); border-radius: 8px; background: var(--fond-carte); color: var(--texte); cursor: pointer; display: inline-flex; align-items: center; justify-content: center; padding: 0; }
+.sf-deplier::before { content: ""; width: .5em; height: .5em; border: solid currentColor; border-width: 0 2px 2px 0; transform: rotate(45deg) translate(-1px, -1px); transition: transform .15s; }
+.sf-deplier[aria-expanded="true"]::before { transform: rotate(225deg) translate(-2px, -2px); }
+.sf-deplier:hover, .sf-deplier:focus-visible { border-color: var(--accent); outline: none; }
+.sf-groupe-theme { font-size: .82rem; text-transform: uppercase; letter-spacing: .04em; color: var(--texte-doux); padding-left: 1.4rem; }
+.sf-coche { display: inline-block; width: .95em; height: .95em; border: 1.5px solid var(--bord-fort); border-radius: 4px; flex: none; position: relative; }
+.sf-groupe[data-etat="toutes"] .sf-coche { background: var(--accent); border-color: var(--accent); }
+.sf-groupe[data-etat="toutes"] .sf-coche::after { content: ""; position: absolute; left: .28em; top: .08em; width: .25em; height: .5em; border: solid var(--fond); border-width: 0 2px 2px 0; transform: rotate(45deg); }
+.sf-groupe[data-etat="partie"] .sf-coche::after { content: ""; position: absolute; left: .2em; right: .2em; top: .38em; height: 2px; background: var(--accent); }
+.sf-fiche-case { cursor: pointer; padding-left: 2.4rem; flex-wrap: wrap; }
+.sf-fiche-case input { margin: 0 .2rem 0 0; }
+.sf-pied { display: flex; align-items: center; justify-content: space-between; gap: .6rem; margin-top: .7rem; padding-top: .6rem; border-top: 1px solid var(--bord); flex-wrap: wrap; }
+.sf-actions { display: flex; gap: .4rem; margin-left: auto; }
+.quiz-fiche { display: flex; align-items: center; gap: .4rem; font-weight: 400 !important; margin-top: 0 !important; font-size: .9rem !important; flex-wrap: wrap; }
+.quiz-maitrise { display: inline-block; width: 5rem; height: .45rem; background: var(--fond-doux); border: 1px solid var(--bord); border-radius: 1em; overflow: hidden; vertical-align: middle; }
+.quiz-maitrise span { display: block; height: 100%; background: var(--accent); }
+.quiz-options { margin-top: .4rem; }
+.quiz-stats { display: flex; gap: .6rem; flex-wrap: wrap; margin: .8rem 0; }
+.quiz-stat { flex: 1 1 7rem; background: var(--fond-carte); border: 1px solid var(--bord); border-radius: var(--rayon); padding: .6rem .8rem; display: flex; flex-direction: column; }
+.quiz-stat strong { font-size: 1.4rem; color: var(--accent); }
+.quiz-stat span { font-size: .78rem; color: var(--texte-doux); }
+.quiz-barre { display: flex; align-items: center; gap: .8rem; margin: .8rem 0; }
+.quiz-progression { flex: 1; height: .5rem; background: var(--fond-doux); border: 1px solid var(--bord); border-radius: 1em; overflow: hidden; }
+.quiz-progression div { height: 100%; background: var(--accent); width: 0; transition: width .3s; }
+.quiz-carte { background: var(--fond-carte); border: 1px solid var(--bord); border-radius: var(--rayon); padding: 1.2rem 1.4rem; box-shadow: var(--ombre); }
+.quiz-cible { display: flex; justify-content: space-between; align-items: center; gap: .5rem; font-size: .8rem; }
+.quiz-code { background: var(--fond-doux); border: 1px solid var(--bord); border-radius: 8px; padding: .6rem .8rem; font-size: .88rem; overflow-x: auto; margin: .6rem 0; white-space: pre; }
+.quiz-carte h2 { font-size: 1.1rem; margin: .6rem 0 .8rem; line-height: 1.4; }
+.quiz-choix { display: block; width: 100%; text-align: left; margin: .35rem 0; padding: .6rem .9rem; border: 1px solid var(--bord-fort); border-radius: 10px; background: var(--fond-carte); color: var(--texte); font: inherit; cursor: pointer; }
+.quiz-choix:hover:not(:disabled) { border-color: var(--accent); }
+.quiz-choix.est-choisi { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+.quiz-choix.est-juste { border-color: #2f7d5b; background: rgba(47,125,91,.15); }
+.quiz-choix.est-faux { border-color: var(--warn-line); background: var(--warn-bg); }
+.quiz-saisie { width: 100%; box-sizing: border-box; padding: .6rem .8rem; border: 1px solid var(--bord-fort); border-radius: 10px; font: inherit; font-family: "DejaVu Sans Mono", Consolas, monospace; background: var(--fond-carte); color: var(--texte); }
+.quiz-saisie.est-juste { border-color: #2f7d5b; }
+.quiz-saisie.est-faux { border-color: var(--warn-line); }
+.quiz-attendu { font-family: "DejaVu Sans Mono", Consolas, monospace; font-size: .9rem; margin: .4rem 0 0; }
+.quiz-verdict { margin-top: .9rem; padding: .7rem .9rem; border-radius: 10px; border: 1px solid var(--bord); }
+.quiz-verdict.quiz-juste { border-color: #2f7d5b; background: rgba(47,125,91,.1); }
+.quiz-verdict.quiz-faux { border-color: var(--warn-line); background: var(--warn-bg); }
+.quiz-verdict-titre { font-weight: 700; }
+.quiz-verdict p { margin: .4rem 0; }
+.quiz-score { font-size: 1.4rem; font-weight: 700; }
+
+/* « hidden » doit gagner sur tout « display » explicite (.btn est en
+   inline-flex, .grp-carte en flex…). Sans cette regle, un bouton cache par
+   le script restait visible — vu sur une capture du quiz le 12 septembre,
+   apres que onze scenarios sur le DOM factice l'avaient laisse passer :
+   ils lisaient la propriete, pas le rendu. */
+/* ---------- lot I : la recherche mene a la section ----------
+   Le resultat dit la section (§), et la page d'arrivee surligne le mot
+   cherche dans cette section — un surlignage qui reste, contrairement a
+   la mise en lumiere (.lumiere), passagere. */
+.resultats .r-section { color: var(--accent); }
+mark.mot-cherche {
+  background: color-mix(in srgb, var(--accent) 26%, transparent);
+  color: inherit;
+  border-radius: 3px;
+  padding: 0 .12em;
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 40%, transparent);
+}
+
+/* ---------- lot J, puis chantier n° 6 : les nouveautes ----------
+   Une nouveaute est une carte : l'icone de sa famille (--nv, posee par
+   build_site.py ou par la fenetre depuis nouveautes.json), ce qu'on peut
+   faire, un bouton qui y mene. La derniere version en grand, les autres
+   repliees. */
+.nouv-titre { font-weight: 400; color: var(--texte-doux); text-transform: none; letter-spacing: 0; }
+.nouv-tag {
+  display: inline-block; margin-left: .4rem; padding: 0 .45em; vertical-align: 1px;
+  font-size: .72rem; font-weight: 600; color: var(--accent);
+  border: 1px solid color-mix(in srgb, var(--accent) 45%, var(--bord-fort)); border-radius: 1em;
+}
+.nv-une { margin: 1.4rem 0 2.2rem; scroll-margin-top: 4.2rem; }
+.nv-quand { display: flex; align-items: center; flex-wrap: wrap; gap: .5rem; margin: 0 0 .25rem; font-size: .82rem; color: var(--texte-doux); }
+.nv-pastille { font-size: .68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; padding: .18rem .6rem; border-radius: 1em; color: #fff; background: #15803d; }
+.nv-titre-une { font-size: 1.55rem; line-height: 1.25; margin: .15rem 0 1rem; text-transform: none; letter-spacing: 0; }
+.nv-cartes { display: grid; grid-template-columns: repeat(auto-fill, minmax(16.5rem, 1fr)); gap: .85rem; }
+.nv-carte { display: flex; flex-direction: column; gap: .4rem; padding: 1rem 1.05rem .9rem; border: 1px solid var(--bord); border-radius: 14px;
+  background: linear-gradient(165deg, color-mix(in srgb, var(--nv) 11%, var(--fond-carte)) 0%, var(--fond-carte) 55%); box-shadow: var(--ombre);
+  transition: transform .15s ease, border-color .15s ease; }
+.nv-carte:hover { transform: translateY(-2px); border-color: color-mix(in srgb, var(--nv) 55%, var(--bord)); }
+.nv-icone { flex: none; width: 2.4rem; height: 2.4rem; border-radius: 11px; display: grid; place-items: center;
+  background: color-mix(in srgb, var(--nv) 17%, transparent); color: color-mix(in srgb, var(--nv) 80%, var(--texte)); }
+.nv-icone svg { width: 1.25rem; height: 1.25rem; }
+.nv-carte h3 { margin: .25rem 0 0; font-size: 1.02rem; line-height: 1.3; }
+.nv-carte p { margin: 0; flex: 1; font-size: .9rem; line-height: 1.5; color: var(--texte-doux); }
+.nv-pied { display: flex; align-items: center; gap: .5rem; margin-top: .45rem; min-height: 2rem; }
+.nv-compte { display: inline-flex; align-items: center; gap: .3rem; font-size: .74rem; color: var(--texte-doux); }
+.nv-compte svg { width: .85rem; height: .85rem; }
+.nv-essayer { margin-left: auto; padding: .38rem .9rem; border-radius: 999px; font-size: .86rem; font-weight: 600; white-space: nowrap;
+  color: #fff; background: var(--nv, var(--accent)); text-decoration: none; }
+.nv-essayer::after { content: " →"; }
+.nv-essayer:hover { filter: brightness(1.12); text-decoration: none; }
+/* « Plus tot » a l'allure d'un titre de section, sans en etre un : un
+   h2.section deviendrait une zone de proposition qui ne designe rien */
+.nv-plus-tot-titre { font-size: .8rem; text-transform: uppercase; letter-spacing: .11em; color: var(--texte-doux); margin: 2.2rem 0 .8rem; font-weight: 700; }
+.nv-plus-tot { border-top: 1px solid var(--bord); }
+.nv-version { border-bottom: 1px solid var(--bord); scroll-margin-top: 4.2rem; }
+.nv-version summary { display: flex; align-items: center; flex-wrap: wrap; gap: .3rem .8rem; padding: .75rem 1.8rem .75rem .2rem; cursor: pointer; list-style: none; }
+.nv-version summary::-webkit-details-marker { display: none; }
+.nv-version summary::before { content: "›"; width: .8rem; font-size: 1.2rem; color: var(--texte-doux); transition: transform .15s; }
+.nv-version details[open] summary::before { transform: rotate(90deg); }
+.nv-v-date { font-weight: 700; min-width: 9.5rem; }
+.nv-v-titre { flex: 1 1 12rem; color: var(--texte-doux); }
+.nv-v-minis { display: inline-flex; gap: .25rem; }
+.nv-mini { width: 1.5rem; height: 1.5rem; border-radius: 7px; display: grid; place-items: center;
+  background: color-mix(in srgb, var(--nv) 17%, transparent); color: color-mix(in srgb, var(--nv) 80%, var(--texte)); }
+.nv-mini svg { width: .85rem; height: .85rem; }
+.nv-v-n { font-size: .78rem; color: var(--texte-doux); }
+.nv-version .nv-cartes { padding: .2rem 0 1rem; }
+.nv-vers-admin { margin-top: 2rem; }
+/* la fenetre de l'arrivee : toutes les nouveautes d'un coup d'oeil */
+.nv-dialogue { max-width: 34rem; padding: 1.1rem 1.2rem; }
+.nv-d-tete { display: flex; align-items: flex-start; justify-content: space-between; gap: .5rem; }
+.nv-d-tete h2 { margin: .1rem 0 .4rem; font-size: 1.3rem; text-transform: none; letter-spacing: 0; }
+.nv-x { border: 0; background: none; color: var(--texte-doux); font-size: 1.5rem; line-height: 1; cursor: pointer; padding: 0 .2rem; }
+.nv-d-liste { list-style: none; margin: .4rem 0 0; padding: 0; max-height: 58vh; overflow-y: auto; }
+.nv-d-item { display: flex; align-items: flex-start; gap: .75rem; padding: .7rem .2rem; border-top: 1px solid var(--bord); }
+.nv-d-texte { flex: 1; min-width: 0; }
+.nv-d-texte strong { font-size: .95rem; }
+.nv-d-texte p { margin: .15rem 0 0; font-size: .86rem; line-height: 1.45; color: var(--texte-doux); }
+.nv-d-item .nv-essayer { align-self: center; margin-left: .2rem; padding: .3rem .75rem; font-size: .8rem; }
+/* deja ouverte : on revient a la fenetre apres l'avoir essayee */
+.nv-d-item.nv-ouverte .nv-essayer { background: none; color: var(--texte-doux); border: 1px solid var(--bord-fort); }
+.nv-d-item.nv-ouverte .nv-essayer::after { content: " ✓"; }
+.nv-d-reste { margin: .6rem 0 0; }
+.nv-dialogue .edt-boutons { display: flex; gap: .6rem; flex-wrap: wrap; margin-top: .9rem; }
+/* le journal de l'administration (/admin/changements.html) */
+.adm-version { margin: 0 0 1.8rem; }
+.adm-entree { margin: .8rem 0; padding: .8rem 1rem; border: 1px solid var(--bord); border-radius: var(--rayon); background: var(--fond-carte); }
+.adm-entree.adm-a-faire { border-left: 4px solid var(--warn-line); }
+.adm-entree h3 { margin: 0 0 .3rem; font-size: 1rem; }
+.adm-entree p { margin: .2rem 0; line-height: 1.5; }
+.adm-faire { margin: .6rem 0 .3rem; padding: .55rem .8rem; border-radius: 8px; background: var(--warn-bg); }
+.adm-faire ol { margin: .3rem 0 0; padding-left: 1.3rem; }
+.adm-faire li { margin: .2rem 0; }
+.adm-liens { font-size: .85rem; }
+/* --accent vaut #444 hors d'un module : illisible en theme sombre (conception § 38) */
+.adm-liens a, .nouveautes .e-st a { color: var(--texte); text-decoration: underline; }
+
+/* ---------- U1 : le menu « moi » (docs/interface.md) ----------
+   Sur ordinateur, un panneau sous le bouton du pseudo ; sur téléphone, une
+   feuille qui monte du bas — un panneau ancré à droite déborde sous 380 px.
+   C'est un <dialog> : le voile, Échap et le piège à tabulation viennent
+   avec. La déconnexion est la dernière entrée, et se voit. */
+.moi-declencheur { display: inline-flex; align-items: center; gap: .35rem; }
+.moi-chevron {
+  width: 0; height: 0; flex: none;
+  border-left: 4px solid transparent; border-right: 4px solid transparent;
+  border-top: 5px solid currentColor; opacity: .75;
+}
+.moi-panneau {
+  /* Posé sous le DÉCLENCHEUR, et non au bord de la fenêtre : l'en-tête est
+     centrée et bornée en largeur, donc sur un grand écran le bouton n'est
+     pas au bord. Le script pose les deux variables ; la requête de média
+     ci-dessous reprend la main sur téléphone (une variable se laisse
+     écraser, un style en ligne non). */
+  position: fixed; top: var(--moi-haut, 3.1rem); right: var(--moi-droite, .9rem);
+  left: auto; bottom: auto; margin: 0;
+  width: 17rem; max-width: calc(100vw - 1.8rem); padding: 0;
+  border: 1px solid var(--bord-fort); border-radius: var(--rayon);
+  background: var(--fond-carte); color: var(--texte); box-shadow: var(--ombre);
+}
+.moi-panneau::backdrop { background: rgba(0,0,0,.35); }
+.moi-tete { padding: .8rem .9rem .6rem; border-bottom: 1px solid var(--bord); }
+.moi-tete strong { display: block; font-size: 1rem; }
+.moi-rang { font-size: .8rem; color: var(--texte-doux); }
+.moi-liste { display: block; padding: .3rem 0; }
+.moi-entree {
+  display: block; width: 100%; box-sizing: border-box; text-align: left;
+  padding: .7rem .9rem; border: 0; background: none; color: var(--texte);
+  font: inherit; text-decoration: none; cursor: pointer;
+}
+.moi-entree:hover, .moi-entree:focus-visible { background: var(--fond-doux); text-decoration: none; }
+/* la page où l'on est (proposition 3) : un trait et du gras, pas le fond du
+   survol — et le focus, posé par le script à l'ouverture, ne se surligne
+   plus qu'au clavier : il faisait croire qu'on était sur « Mon compte ». */
+.moi-entree[aria-current="page"] { font-weight: 700; box-shadow: inset 3px 0 0 var(--accent); }
+.moi-entree:focus:not(:focus-visible) { outline: none; }
+.moi-entree-douce { color: var(--texte-doux); font-size: .92rem; }
+.moi-sortie { border-top: 1px solid var(--bord); padding: .3rem 0; }
+.moi-partir { color: var(--warn-line); font-weight: 600; }
+
+@media (max-width: 640px) {
+  .moi-panneau {
+    top: auto; bottom: 0; left: 0; right: 0; width: 100%; max-width: none;
+    border-radius: 14px 14px 0 0; border-bottom: 0;
+  }
+  .moi-entree { padding: .85rem 1.1rem; }
+}
+
+/* ---------- U2 : les paramètres en cartes (docs/interface.md) ----------
+   Des sections titrées avec de l'air entre elles, plutôt qu'une liste
+   continue ; un sommaire d'ancres en tête ; l'état en première ligne de
+   chaque carte ; la prose derrière un intitulé qui dit ce qu'on y trouve. */
+.par-sommaire { display: flex; flex-wrap: wrap; gap: .4rem; margin: .9rem 0 1.2rem; }
+.par-sommaire a {
+  padding: .35rem .8rem; border: 1px solid var(--bord-fort); border-radius: 1em;
+  font-size: .88rem; text-decoration: none; color: var(--texte); background: var(--fond-carte);
+}
+.par-sommaire a:hover, .par-sommaire a:focus { border-color: var(--accent); color: var(--accent); }
+.par-sommaire-voisin { margin-left: auto; color: var(--texte-doux) !important; }
+.par-carte {
+  margin: 0 0 1.1rem; padding: 1rem 1.1rem 1.1rem;
+  border: 1px solid var(--bord); border-radius: var(--rayon);
+  background: var(--fond-carte); scroll-margin-top: 4.2rem;
+}
+.par-carte > h2.section:first-child { margin-top: 0; }
+.par-etat { margin: .2rem 0 .8rem; color: var(--texte-doux); font-size: .92rem; }
+.par-plus { margin-top: .9rem; border-top: 1px solid var(--bord); padding-top: .6rem; }
+.par-plus summary { cursor: pointer; color: var(--texte-doux); font-size: .9rem; }
+.par-plus p { font-size: .92rem; }
+@media (max-width: 640px) { .par-sommaire-voisin { margin-left: 0; } }
+
+/* ---------- U3 : « Mes demandes » ----------
+   La pastille du menu, et la ligne du portail. Toutes deux ne s'affichent
+   que quand une réponse est arrivée : on n'annonce jamais « rien de neuf ». */
+.moi-pastille { margin-left: .5rem; }
+.bandeau-suivi {
+  display: flex; align-items: center; gap: .6rem;
+  margin: 0 0 1rem; padding: .7rem .9rem;
+  border: 1px solid color-mix(in srgb, var(--accent) 45%, var(--bord-fort));
+  border-radius: var(--rayon); background: var(--fond-carte);
+  color: var(--texte); text-decoration: none; font-size: .95rem;
+}
+.bandeau-suivi:hover, .bandeau-suivi:focus { border-color: var(--accent); text-decoration: none; }
+.dem-actions { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: .8rem; }
+
+/* ---------- K3 : « aucune sauvegarde » ----------
+   Discret, mais toujours là tant que c'est vrai : un rappel qu'on peut
+   ignorer, pas une fenêtre qui bloque (docs/messagerie-accessible.md, § K3). */
+.cles-sans-sauvegarde {
+  margin: .4rem 0 .6rem; padding: .45rem .7rem;
+  border-left: 3px solid var(--warn-line); background: var(--warn-bg);
+  border-radius: 0 var(--rayon) var(--rayon) 0;
+  font-size: .88rem; color: var(--texte);
+}
+.cles-alerte-texte { color: var(--warn-line); }
+
+[hidden] { display: none !important; }
+
+
+/* ══════════ La carte du projet (/admin/carte.html, onglet « Le projet ») ══════════
+   Un arbre de <details> : replier et deplier sans script. Deux niveaux de
+   lecture cohabitent dans le document — « Decouverte » et « Technique » — et
+   c'est une classe sur l'arbre qui montre l'un ou l'autre : rien n'est retire,
+   donc la recherche du navigateur et l'impression voient tout. */
+.ca-barre { display: flex; gap: .6rem; flex-wrap: wrap; align-items: center; margin: .8rem 0 .5rem; }
+.ca-barre .carte-filtre { flex: 1 1 18rem; }
+.ca-lecture, .ca-outils { display: flex; gap: .25rem; }
+.ca-mode, .ca-vueb {
+  background: var(--fond-carte); border: 1px solid var(--bord); border-radius: var(--rayon);
+  padding: .35rem .8rem; font: inherit; font-weight: 600; color: var(--texte-doux); cursor: pointer;
+}
+.ca-mode:hover, .ca-vueb:hover { color: var(--texte); }
+/* Le choisi est le plus lisible : --accent-soft reste clair en theme sombre
+   (chaque module le remplace, pas une page d'administration), et servirait ici
+   de fond clair sous un texte clair. */
+.ca-mode.est-actif, .ca-vueb.est-actif { background: var(--fond-doux); border-color: var(--texte-doux); color: var(--texte); }
+.btn-mince { padding: .35rem .7rem; font-size: .9rem; }
+
+.ca-domaines { display: flex; gap: .3rem; flex-wrap: wrap; margin: .4rem 0 .8rem; }
+.ca-dom {
+  display: inline-flex; align-items: center; gap: .35rem;
+  background: none; border: 1px solid var(--bord); border-radius: 2em;
+  padding: .25rem .7rem; font: inherit; font-size: .88rem; color: var(--texte-doux); cursor: pointer;
+}
+.ca-dom.est-actif { color: var(--texte); border-color: var(--texte-doux); }
+.ca-dom:not(.est-actif) { opacity: .5; text-decoration: line-through; }
+.ca-pastille { width: .6rem; height: .6rem; border-radius: 50%; flex: 0 0 auto; display: inline-block; }
+
+.ca-arbre { margin-top: .6rem; }
+.ca-n { border-left: 2px solid var(--bord); padding-left: .7rem; margin: .18rem 0; }
+.ca-n[data-niveau="0"] { border-left-width: 0; padding-left: 0; margin-top: 1.1rem; }
+.ca-t {
+  display: flex; align-items: baseline; gap: .45rem; flex-wrap: wrap;
+  cursor: pointer; padding: .12rem 0; list-style: none;
+}
+.ca-t::-webkit-details-marker { display: none; }
+details.ca-n > .ca-t::before { content: "▸"; color: var(--texte-doux); font-size: .8em; }
+details.ca-n[open] > .ca-t::before { content: "▾"; }
+div.ca-n > .ca-t { cursor: default; padding-left: .8em; }
+.ca-label { font-weight: 600; }
+.ca-n[data-niveau="0"] > .ca-t > .ca-label { font-size: 1.15rem; }
+.ca-n[data-niveau="1"] > .ca-t > .ca-label { font-size: 1.02rem; }
+.ca-n[data-niveau="2"] > .ca-t > .ca-label,
+.ca-n[data-niveau="3"] > .ca-t > .ca-label { font-family: ui-monospace, "DejaVu Sans Mono", SFMono-Regular, Menlo, Consolas, monospace; font-weight: 500; }
+.ca-genre { font-size: .76rem; color: var(--texte-doux); border: 1px solid var(--bord); border-radius: 1em; padding: 0 .45em; }
+.ca-novice, .ca-ing, .ca-manque { margin: .15rem 0 .35rem 1.05rem; font-size: .92rem; max-width: 62ch; }
+.ca-ing { color: var(--texte-doux); font-family: ui-monospace, "DejaVu Sans Mono", SFMono-Regular, Menlo, Consolas, monospace; font-size: .85rem; }
+.ca-manque { color: var(--texte-doux); font-style: italic; }
+.ca-fils { margin-left: .35rem; }
+
+/* Un seul niveau de lecture a la fois : c'est la classe de l'arbre qui decide. */
+.ca-arbre:not(.mode-ingenieur) .ca-ing { display: none; }
+.ca-arbre.mode-ingenieur .ca-novice { display: none; }
+.ca-arbre.mode-ingenieur .ca-ing { font-family: ui-monospace, "DejaVu Sans Mono", SFMono-Regular, Menlo, Consolas, monospace; }
+
+.ca-hors, .ca-filtre-hors { display: none; }
+
+/* ── Les deux vues dessinees : le graphe et le radial ─────────────────────
+   Le dessin n'a pas de donnees a lui : assets/carte.js relit l'arbre ci-dessus
+   et le redessine. Toutes ses couleurs sortent donc des memes jetons que
+   l'arbre, et la SEULE couleur posee par le script est celle du domaine, sur
+   la bande de gauche de chaque boite : c'est la teinte de la pastille.
+   `touch-action: none` est indispensable — sans elle, un doigt pose sur la
+   toile fait defiler la page au lieu de deplacer le dessin. */
+.ca-dispo { display: flex; gap: .25rem; margin: 0 0 .7rem; flex-wrap: wrap; }
+
+.ca-toile {
+  position: relative; overflow: hidden;
+  border: 1px solid var(--bord); border-radius: var(--rayon);
+  background: var(--fond-doux);
+}
+.ca-toile svg {
+  display: block; width: 100%; height: 68vh; min-height: 22rem;
+  touch-action: none; cursor: grab; user-select: none;
+}
+.ca-toile svg:active { cursor: grabbing; }
+.ca-zoom { position: absolute; top: .5rem; right: .5rem; z-index: 2; display: flex; gap: .25rem; }
+.ca-zoom .btn-mince { background: var(--fond-carte); border: 1px solid var(--bord-fort); color: var(--texte); }
+
+.ca-g-lien { fill: none; stroke: var(--bord-fort); stroke-width: 1.4; }
+.ca-g-moyeu { stroke: var(--bord); stroke-width: 1; }
+.ca-g-coeur { fill: var(--texte-doux); stroke: var(--fond-doux); stroke-width: 3; }
+
+.ca-g-n { cursor: pointer; }
+.ca-g-boite { fill: var(--fond-carte); stroke: var(--bord-fort); stroke-width: 1; }
+.ca-g-n:hover .ca-g-boite { stroke: var(--texte-doux); }
+.ca-g-n:focus { outline: none; }
+.ca-g-n:focus .ca-g-boite,
+.ca-g-n.est-choisi .ca-g-boite { stroke: var(--texte); stroke-width: 2; }
+.ca-g-label { fill: var(--texte); font-size: 13px; }
+.ca-g-l0 .ca-g-label, .ca-g-l1 .ca-g-label { font-weight: 600; }
+
+/* Le radial ne pose pas de boites : un point, et son etiquette couchee le long
+   du rayon. Deux voisines ne peuvent plus se croiser, puisque ce qui les
+   separe est justement la direction ou elles ne s'etendent pas. `ca-g-cible`
+   est le disque invisible qui rattrape le doigt : `fill: none` ne recevrait
+   rien, c'est `pointer-events: all` qui le rend cliquable. */
+.ca-g-cible { fill: none; pointer-events: all; }
+.ca-g-point { stroke: var(--fond-doux); stroke-width: 1.5; }
+.ca-g-rlabel { fill: var(--texte); font-size: 12px; }
+.ca-g-l0 .ca-g-rlabel { font-size: 16px; font-weight: 700; }
+.ca-g-l1 .ca-g-rlabel { font-size: 13.5px; font-weight: 600; }
+.ca-g-l2 .ca-g-rlabel, .ca-g-l3 .ca-g-rlabel { fill: var(--texte-doux); }
+.ca-g-n:hover .ca-g-rlabel,
+.ca-g-n:focus .ca-g-rlabel,
+.ca-g-n.est-choisi .ca-g-rlabel { fill: var(--texte); font-weight: 700; }
+.ca-g-n:focus .ca-g-point,
+.ca-g-n.est-choisi .ca-g-point { stroke: var(--texte); stroke-width: 2.5; }
+.ca-g-l2 .ca-g-label, .ca-g-l3 .ca-g-label { font-family: ui-monospace, "DejaVu Sans Mono", SFMono-Regular, Menlo, Consolas, monospace; font-size: 12px; }
+
+/* Le panneau du nœud choisi. Les deux lectures y paraissent ENSEMBLE : la
+   regle qui n'en montre qu'une ne vaut que dans l'arbre, et c'est ici, ou on
+   a la place, que la comparaison sert. */
+.ca-detail {
+  margin: .7rem 0 0; padding: .7rem .9rem;
+  border: 1px solid var(--bord); border-left: 3px solid var(--texte-doux);
+  border-radius: var(--rayon); background: var(--fond-carte);
+}
+.ca-d-tete { display: flex; align-items: baseline; gap: .5rem; flex-wrap: wrap; margin: 0 0 .4rem; }
+.ca-detail .ca-novice, .ca-detail .ca-ing, .ca-detail .ca-manque { margin-left: 0; }
+
+/* Le nœud qu'on vient de suivre depuis un dessin, le temps de le trouver. */
+.ca-vise > .ca-t { background: var(--fond-doux); border-radius: 6px; }
+
+@media (max-width: 40rem) {
+  .ca-toile svg { height: 60vh; }
+}
+
+/* ══════════ La frise des commits ══════════ */
+.frise { list-style: none; padding: 0; margin: .8rem 0; }
+.fr-jour { display: flex; gap: .8rem; align-items: baseline; padding: .25rem 0; border-top: 1px solid var(--bord); flex-wrap: wrap; }
+.fr-date { flex: 0 0 9.5rem; font-weight: 600; font-size: .9rem; color: var(--texte-doux); }
+.fr-lot { list-style: none; padding: 0; margin: 0; flex: 1 1 20rem; }
+.fr-lot li { padding: .1rem 0; font-size: .93rem; }
+@media (max-width: 40rem) { .fr-date { flex-basis: 100%; } }
+
+/* A l'impression, c'est toujours l'arbre qui sort : lui seul se lit sur du
+   papier, et la doctrine de cette page est qu'on n'y retire jamais rien de ce
+   qui se cherche ou s'imprime. Les deux dessins sont des vues d'ecran. */
+@media print {
+  .ca-dispo, .ca-toile, .ca-detail, .ca-outils, .ca-lecture { display: none !important; }
+  .ca-arbre[hidden] { display: block !important; }
+}
